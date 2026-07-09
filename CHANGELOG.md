@@ -15,13 +15,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - AESP-0006: Knowledge Graph
 - AESP-0007 through AESP-0015
 
-## [0.4.0] — 2026-07-09
+## [0.4.0] — 2026-07-10
 
 ### Added — AESP-0002: Agent Roles
 
-This release delivers the role system for autonomous agents — a ~28,000-word
-specification defining a dual-level role model (Role Templates + Role
-Assignments), a 4-layer RBAC+ permission architecture, 12 standard role
+This release delivers the role system for autonomous agents — a ~185,000-word
+specification (across 3 files) defining a dual-level role model (Role Templates +
+Role Assignments), a 4-layer RBAC+ permission architecture, 12 standard role
 templates, and comprehensive lifecycle management.
 
 #### Specification Content (AESP-0002)
@@ -62,22 +62,25 @@ deprecated→retired) with Mermaid diagram, Assignment lifecycle, version
 migration, phase-based assignment, role rotation, emergency revocation
 (break-glass)
 
-**Section 7: Standard Role Catalog** — 12 roles across 4 categories with
-full definitions (Executor, Architect, Specialist, Researcher, Orchestrator,
-Facilitator, Strategist, Evaluator, Guardian, Auditor, Liaison, Mediator),
-Belbin analogs, ARES dimensions, crew composition rules, phase-based
-assignment table, role-to-topology mapping
+**Section 7: Standard Role Catalog** — 48 complete dimension-to-role mappings
+(4×3×3×3), 12 primary roles with full YAML templates and usage guidance
+(ANA, CRT, DSG, ARC, STG, AUD, MGR, DIR, COO, ORC, BRI, BRI-C), complete
+role summary table with frequencies, Dynamic Role Builder (5-step process),
+Role Selection Quick Reference
 
-**Section 8: Advanced Patterns** — Matrix organization, delegation patterns
-(4 types), permission boundaries in practice, dynamic role assumption,
-role rotation, cross-organizational roles, Agent Card integration, custom
-templates
+**Section 8: Advanced Patterns** — Composite Roles (compatibility matrix,
+examples), Dynamic Capability-Based Roles (4-step construction),
+Cross-Dimensional Synthesis (workflow pattern), Role Evolution Patterns,
+Multi-Agent Composition Patterns (4 patterns: Assembly Line, Parallel
+Exploration, Hub and Spoke, Peer Network), 3 Advanced Anti-Patterns,
+Decision Framework (flowchart), Pattern Maturity Model (6 levels)
 
 **Section 9: JSON Schema Definitions** — 7 complete JSON Schema Draft 2020-12
 schemas (RoleTemplate, RoleAssignment, PermissionBoundary, TrustPolicy,
 RoleSession, Permission, EffectivePermission)
 
 **Section 10: Examples** — 4 comprehensive examples with complete JSON
+(flat org, matrix org, permission walkthrough, break-glass)
 
 **Section 11: Counter-Examples** — 6 anti-patterns with incorrect JSON,
 explanations, and corrections
@@ -92,11 +95,11 @@ privilege escalation prevention, deny-by-default
 cross-org federation, ML-based optimization, future spec integration
 
 #### Assets
-- `specification/AESP-0002.md` — Sections 1-3, 54,001 bytes
-- `specification/AESP-0002-continued.md` — Sections 4-8, 92,501 bytes
-- `specification/AESP-0002-reference.md` — Sections 9-14, 88,650 bytes
+- `specification/AESP-0002.md` — Sections 1-3, 34,330 bytes
+- `specification/AESP-0002-continued.md` — Sections 4-8, 102,483 bytes
+- `specification/AESP-0002-reference.md` — Sections 9-14, 48,306 bytes
 - `specification/aesp-0002.yaml` — AESP-0002 metadata file
-- 11 Mermaid diagrams, 7 JSON Schemas, 12 standard role definitions
+- 11+ Mermaid diagrams, 7 JSON Schemas, 12 standard role definitions
 
 ## [0.3.0] — 2026-07-09
 
