@@ -292,3 +292,149 @@ An agent MAY hold multiple RoleAssignments simultaneously. This is a core featur
 - An agent MAY hold any number of assignments across different dimensions simultaneously.
 - An agent MAY hold multiple assignments to the same RoleTemplate if each assignment has a different scope.
 - An agent MUST NOT hold more than one active assignment to the same RoleTemplate in the same scope.
+- When evaluating permissions for an action, the system SHALL consider the union of effective permissions from all active assignments in the requesting scope.
+- If assignments grant conflicting permissions (same action and resource with different effects), deny wins (see §5.6, Step 8).
+
+**Assignment set for an agent.** The effective authorization state of an agent in a given scope is the union of all active assignments in that scope. Formally:
+
+```
+agent_effective_permissions(agent, scope) =
+    ⋃ { assignment.effective_permissions
+        | assignment.agent_id = agent.id
+        ∧ assignment.scope = scope
+        ∧ assignment.status = "active" }
+```
+
+### 4.8 Assignment Conflict Detection
+
+Certain RoleTemplates declare mutual exclusion through their `composition_rules.conflicts_with` field. The system MUST enforce these conflict constraints at the assignment level.
+
+**Conflict rules:**
+- If RoleTemplate A lists RoleTemplate B in `conflicts_with`, then no agent MAY hold active assignments to both A and B in the same scope.
+- Conflict detection SHALL be evaluated when an assignment is created and when an assignment transitions to `active`.
+- If creating or activating an assignment would create a conflict, the operation SHALL be rejected with a conflict error.
+- Conflicts are scope-local. An agent MAY hold conflicting roles in different scopes.
+- An agent MAY hold conflicting roles across different dimensions if the conflicting templates' composition rules permit coexistence across dimensions.
+
+**Conflict detection algorithm:**
+
+```
+function detect_conflict(new_assignment):
+    agent_assignments = get_active_assignments(new_assignment.agent_id, new_assignment.scope)
+    new_template = load_template(new_assignment.template_id)
+
+    for existing in agent_assignments:
+        existing_template = load_template(existing.template_id)
+
+        # Direct conflict: new template conflicts with existing
+        if existing_template.id in new_template.composition_rules.conflicts_with:
+            return CONFLICT(new_template.id, existing_template.id)
+
+        # Reverse conflict: existing template conflicts with new
+        if new_template.id in existing_template.composition_rules.conflicts_with:
+            return CONFLICT(existing_template.id, new_template.id)
+
+    return NO_CONFLICT
+```
+
+**Requirement enforcement.** If RoleTemplate A lists RoleTemplate B in `composition_rules.requires`, an assignment to A in a scope SHALL activate only if at least one active assignment to B exists in the same scope. The system MUST verify requirement satisfaction when an assignment transitions to `active`.
+
+---
+
+## 5. Permission Model (RBAC+)
+
+### 5.1 RBAC+ Architecture Overview
+
+AESP-0002 defines **RBAC+**, a four-layer permission architecture (ADR-2) that extends classical Role-Based Access Control with Attribute-Based conditions (ABAC), Relationship-Based constraints (ReBAC), and Policy-Based governance (PBAC). Each layer processes permissions in sequence, with each subsequent layer able to restrict but not expand beyond the previous layer.
+
+```mermaid
+flowchart TB
+    subgraph L1["Layer 1: RBAC Core"]
+        RBAC["Base Permissions<br/>+ Role Hierarchy Inheritance"]
+    end
+
+    subgraph L2["Layer 2: ABAC Conditions"]
+        ABAC["CEL Expression Evaluation<br/>Runtime Context Filtering"]
+    end
+
+    subgraph L3["Layer 3: ReBAC Relationships"]
+        REBAC["Relationship Tuple Resolution<br/>Graph-Based Constraints"]
+    end
+
+    subgraph L4["Layer 4: PBAC Governance"]
+        PBAC["Permission Boundaries<br/>Deny Overrides<br/>Provenance Recording"]
+    end
+
+    TEMPLATE["RoleTemplate<br/>permissions[]"] --> RBAC
+    RBAC --> ABAC
+    ABAC --> REBAC
+    REBAC --> PBAC
+    PBAC --> EFFECTIVE["EffectivePermissions[]"]
+
+    BOUNDARY["PermissionBoundary<br/>max_permissions[]"] --> PBAC
+    CONTEXT["RequestContext<br/>agent, resource, action, time"] --> ABAC
+    RELATIONS["ReBAC Tuple Store<br/>object#relation@subject"] --> REBAC
+```
+
+**Layer processing invariant.** The permission set at layer N SHALL be a subset (or equal set) of the permission set at layer N-1. No layer MAY add permissions that were not present in a previous layer. The only exception is the RBAC Core layer, which may expand permissions through role hierarchy inheritance.
+
+**Deny-by-default.** If a permission is not explicitly granted and not denied by any layer, the default effect SHALL be `"deny"`. An agent MUST be able to present at least one active assignment that grants the requested permission for access to be authorized.
+
+### 5.2 RBAC Core — Base Permissions and Role Hierarchy
+
+The RBAC Core layer is the foundation of the permission model. It defines the base permission set for each RoleTemplate and propagates permissions through the template inheritance hierarchy.
+
+**Permission format.** Each permission is an object with the following fields:
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `action` | string | yes | The action being permitted or denied. Format: `{resource_type}:{operation}` (e.g., `workunit:execute`). |
+| `resource` | string | yes | The resource pattern. Uses colon-separated path notation with `*` as single-segment wildcard and `**` as multi-segment wildcard (e.g., `organization:org-001:workunits:**`). |
+| `effect` | enum | yes | Either `"allow"` or `"deny"`. |
+| `condition` | string \| null | no | A CEL expression evaluated at the ABAC layer (see §5.3). |
+| `relationship_constraint` | ReBACConstraint \| null | no | A ReBAC relationship constraint evaluated at the ReBAC layer (see §5.4). |
+
+**Role hierarchy inheritance.** RoleTemplates MAY specify a `parent_template_id` to inherit from another template. The inheritance rules are:
+- A child template inherits all permissions from its parent.
+- The inheritance graph SHALL be a Directed Acyclic Graph (DAG).
+- The maximum inheritance depth SHALL NOT exceed 3 levels (template → parent → grandparent).
+- Child permissions override parent permissions for the same `(action, resource)` pair.
+- Inherited permissions are collected at the RBAC Core layer before subsequent layers process them.
+
+**Example — RBAC Core Permission:**
+
+```json
+{
+  "action": "workunit:execute",
+  "resource": "organization:{org_id}:workunits:*",
+  "effect": "allow",
+  "condition": null,
+  "relationship_constraint": null
+}
+```
+
+### 5.3 ABAC Conditions — CEL Expression Format
+
+The ABAC layer filters permissions based on runtime context using Common Expression Language (CEL) expressions. Each permission MAY include a `condition` field containing a CEL expression string.
+
+**Available context variables.** CEL expressions in conditions MAY reference the following variables:
+
+| Variable | Type | Description |
+|---|---|---|
+| `agent.id` | string | The requesting agent's URN. |
+| `agent.trust_level` | float | The agent's trust score (0.0 to 1.0). |
+| `agent.capabilities` | string[] | The agent's declared capabilities. |
+| `agent.roles` | string[] | The role template IDs the agent holds in the current scope. |
+| `time.now` | timestamp | The current time (UTC). |
+| `time.of_day` | string | The current time formatted as `"HH:MM"` in 24-hour notation. |
+| `time.day_of_week` | string | The current day: `"monday"` through `"sunday"`. |
+| `resource.id` | string | The resource being accessed. |
+| `resource.type` | string | The resource type. |
+| `resource.owner` | string | The URN of the resource's owner. |
+| `request.action` | string | The action being requested. |
+| `request.scope` | object | The scope of the current request. |
+| `incident.severity` | string | The severity level of any active incident (for break-glass scenarios). |
+
+**Condition evaluation.** For each permission with a non-null `condition`:
+- The system SHALL evaluate the CEL expression against the current request context.
+- If the expression evaluates to `true`, the permission passes the ABAC layer.
