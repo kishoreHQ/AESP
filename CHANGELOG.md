@@ -9,12 +9,94 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Planned
-- AESP-0002: Agent Roles
 - AESP-0003: Communication Protocols
 - AESP-0004: Memory Systems
 - AESP-0005: Workflow Orchestration
 - AESP-0006: Knowledge Graph
 - AESP-0007 through AESP-0015
+
+## [0.4.0] — 2026-07-09
+
+### Added — AESP-0002: Agent Roles
+
+This release delivers the role system for autonomous agents — a ~28,000-word
+specification defining a dual-level role model (Role Templates + Role
+Assignments), a 4-layer RBAC+ permission architecture, 12 standard role
+templates, and comprehensive lifecycle management.
+
+#### Specification Content (AESP-0002)
+
+**Section 1: Introduction** — Purpose and scope, relationship to AESP-0001
+(mapping table + Mermaid diagram), 8 core terms defined, 4 abbreviations,
+9 conformance criteria across 3 levels (Basic/Standard/Full)
+
+**Section 2: Role Model Overview** — Dual-level model (Template + Assignment)
+with 4 benefits, RBAC+ 4-layer architecture with Mermaid diagram (RBAC Core →
+ABAC Conditions → ReBAC Constraints → PBAC Governance), 5 entity overview
+with summary table, ER diagram with multiplicity (8 relationships) and 6 key
+constraints, 4 matrix dimensions (delivery/capability/community/system) with
+table, namespace scoping with 4 scoping rules
+
+**Section 3: Role Templates** — Complete field spec (14 fields + Permission
+sub-entity + CompositionRules sub-entity + QuotaEntry sub-entity), 4
+categories (Execution, Coordination, Quality, Bridge), multi-dimension
+semantics (4 rules), composition rules (can_coexist_with, conflicts_with,
+requires, cardinality constraints), template versioning (semver semantics,
+pinning, upgrade semantics), template inheritance (DAG rules, max depth 2,
+field overriding, resolution algorithm + Mermaid diagram), built-in vs custom
+templates (2 complete JSON examples)
+
+**Section 4: Role Assignments** — Complete field spec, scope types
+(organization vs workunit), 5-state lifecycle with Mermaid diagram,
+time-bounded assignments, dynamic role assumption via TrustPolicy, multiple
+assignments, conflict detection with pseudocode
+
+**Section 5: Permission Model (RBAC+)** — 4-layer architecture overview,
+RBAC Core, ABAC Conditions (CEL expressions), ReBAC Relationships
+(Zanzibar-style tuples), PBAC Governance (boundaries + policies), 9-step
+Permission Resolution Algorithm with Python pseudocode,
+EffectivePermission format with provenance
+
+**Section 6: Role Lifecycle** — Template lifecycle (draft→published→
+deprecated→retired) with Mermaid diagram, Assignment lifecycle, version
+migration, phase-based assignment, role rotation, emergency revocation
+(break-glass)
+
+**Section 7: Standard Role Catalog** — 12 roles across 4 categories with
+full definitions (Executor, Architect, Specialist, Researcher, Orchestrator,
+Facilitator, Strategist, Evaluator, Guardian, Auditor, Liaison, Mediator),
+Belbin analogs, ARES dimensions, crew composition rules, phase-based
+assignment table, role-to-topology mapping
+
+**Section 8: Advanced Patterns** — Matrix organization, delegation patterns
+(4 types), permission boundaries in practice, dynamic role assumption,
+role rotation, cross-organizational roles, Agent Card integration, custom
+templates
+
+**Section 9: JSON Schema Definitions** — 7 complete JSON Schema Draft 2020-12
+schemas (RoleTemplate, RoleAssignment, PermissionBoundary, TrustPolicy,
+RoleSession, Permission, EffectivePermission)
+
+**Section 10: Examples** — 4 comprehensive examples with complete JSON
+
+**Section 11: Counter-Examples** — 6 anti-patterns with incorrect JSON,
+explanations, and corrections
+
+**Section 12: Best Practices** — 20 practices across 4 categories
+
+**Section 13: Security Considerations** — 6 subsections covering least
+privilege, boundary enforcement, trust policy hardening, audit logging,
+privilege escalation prevention, deny-by-default
+
+**Section 14: Future Work** — Role marketplace, emergent role detection,
+cross-org federation, ML-based optimization, future spec integration
+
+#### Assets
+- `specification/AESP-0002.md` — Sections 1-3, 54,001 bytes
+- `specification/AESP-0002-continued.md` — Sections 4-8, 92,501 bytes
+- `specification/AESP-0002-reference.md` — Sections 9-14, 88,650 bytes
+- `specification/aesp-0002.yaml` — AESP-0002 metadata file
+- 11 Mermaid diagrams, 7 JSON Schemas, 12 standard role definitions
 
 ## [0.3.0] — 2026-07-09
 
