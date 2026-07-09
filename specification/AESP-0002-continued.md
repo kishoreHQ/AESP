@@ -611,3 +611,220 @@ def resolve_effective_permissions(assignment, context):
     deduped = {}
     for perm in permissions:
         key = (perm.action, perm.resource)
+        deduped[key] = perm  # Later entries override earlier ones
+    permissions = list(deduped.values())
+
+    # ── Step 4: Evaluate ABAC conditions ──────────────────────────────
+    abac_permissions = []
+    for perm in permissions:
+        if perm.condition is not None:
+            result = evaluate_cel(perm.condition, context)
+            if result is True:
+                abac_permissions.append(perm)
+            # If False or evaluation error: filter out (fail-closed)
+        else:
+            abac_permissions.append(perm)
+
+    # ── Step 5: Apply ReBAC relationship constraints ──────────────────
+    rebac_permissions = []
+    for perm in abac_permissions:
+        if perm.relationship_constraint is not None:
+            resolved_constraint = resolve_placeholders(
+                perm.relationship_constraint, context
+            )
+            if check_relationship_tuple(resolved_constraint):
+                rebac_permissions.append(perm)
+            # If no matching tuple: filter out (fail-closed)
+        else:
+            rebac_permissions.append(perm)
+
+    # ── Step 6: Apply scope restriction ───────────────────────────────
+    scoped_permissions = [
+        p for p in rebac_permissions
+        if resource_in_scope(p.resource, assignment.scope)
+    ]
+    if len(scoped_permissions) < len(rebac_permissions):
+        provenance.append("scope_resolution")
+
+    # ── Step 7: Apply permission boundaries (ceiling) ─────────────────
+    boundary = resolve_effective_boundary(assignment.agent_id, assignment.scope)
+    bounded_permissions = intersect_permissions(
+        scoped_permissions, boundary.max_permissions
+    )
+    provenance.append(f"boundary:{boundary.id}")
+
+    # ── Step 8: Resolve deny/allow conflicts (deny wins) ──────────────
+    final_permissions_map = {}
+    for perm in bounded_permissions:
+        key = (perm.action, perm.resource)
+        if key not in final_permissions_map:
+            final_permissions_map[key] = perm
+        elif perm.effect == "deny":
+            final_permissions_map[key] = perm  # Deny overrides allow
+    final_permissions = list(final_permissions_map.values())
+
+    # ── Step 9: Record provenance ─────────────────────────────────────
+    result = []
+    for perm in final_permissions:
+        ep = EffectivePermission(
+            permission=perm,
+            provenance=list(provenance),
+            resolved_at=now_utc()
+        )
+        result.append(ep)
+
+    return result
+
+
+def resolve_effective_boundary(agent_id, scope):
+    """
+    Compute the effective permission boundary by intersecting
+    all applicable boundaries (agent, organization, workunit, system default).
+    """
+    boundaries = []
+
+    # System default boundary (always present, lowest priority)
+    boundaries.append(load_system_default_boundary())
+
+    # Organization-level boundary
+    org_boundary = load_boundary(organization_id=scope.get('organization_id'))
+    if org_boundary:
+        boundaries.append(org_boundary)
+
+    # Workunit-level boundary
+    if scope.type == "workunit":
+        wu_boundary = load_boundary(workunit_id=scope.id)
+        if wu_boundary:
+            boundaries.append(wu_boundary)
+
+    # Agent-level boundary (highest priority)
+    agent_boundary = load_boundary(agent_id=agent_id)
+    if agent_boundary:
+        boundaries.append(agent_boundary)
+
+    # Intersect all boundaries: start with most restrictive (highest priority)
+    # and intersect with progressively broader boundaries.
+    boundaries.sort(key=lambda b: b.priority)
+    effective = boundaries[0]
+    for b in boundaries[1:]:
+        effective = intersect_boundaries(effective, b)
+
+    return effective
+
+
+def intersect_permissions(granted, ceiling):
+    """
+    Return permissions that exist in both granted and ceiling sets.
+    A deny in either set for a given (action, resource) produces deny.
+    """
+    ceiling_map = {}
+    for p in ceiling:
+        key = (p.action, p.resource)
+        ceiling_map[key] = p.effect
+
+    result = []
+    for p in granted:
+        key = (p.action, p.resource)
+        if key in ceiling_map:
+            if ceiling_map[key] == "deny" or p.effect == "deny":
+                # Deny propagation
+                result.append(Permission(
+                    action=p.action,
+                    resource=p.resource,
+                    effect="deny",
+                    condition=p.condition,
+                    relationship_constraint=p.relationship_constraint
+                ))
+            else:
+                result.append(p)
+        # If key not in ceiling: permission is not allowed
+    return result
+
+
+def intersect_boundaries(b1, b2):
+    """Intersect two PermissionBoundary objects."""
+    max_perms = intersect_permissions(b1.max_permissions, b2.max_permissions)
+    return PermissionBoundary(
+        id=f"intersection:{b1.id}:{b2.id}",
+        name=f"Intersection of {b1.name} and {b2.name}",
+        max_permissions=max_perms,
+        scope=b1.scope,  # Narrower scope wins
+        priority=min(b1.priority, b2.priority)
+    )
+
+
+def resolve_conflicts(permissions):
+    """
+    Deny wins over allow for the same (action, resource) pair.
+    Returns the deduplicated permission set.
+    """
+    result = {}
+    for perm in permissions:
+        key = (perm.action, perm.resource)
+        if key not in result:
+            result[key] = perm
+        elif perm.effect == "deny":
+            result[key] = perm
+    return list(result.values())
+```
+
+### 5.7 EffectivePermission Format
+
+The output of the permission resolution algorithm is a list of EffectivePermission objects. Each EffectivePermission combines the resolved permission with metadata tracing its origin through the RBAC+ pipeline.
+
+| Field | Type | Description |
+|---|---|---|
+| `permission` | Permission | The fully resolved permission (action, resource, effect, condition, relationship_constraint). |
+| `provenance` | string[] | Ordered list of pipeline steps that contributed to this permission (e.g., `["template:role.exec.executor:v1.0.0", "template:role.exec.base:v1.0.0", "scope_resolution", "boundary:pb-default-org"]`). |
+| `resolved_at` | timestamp | The time when this effective permission was computed. |
+
+**Example — EffectivePermission:**
+
+```json
+{
+  "permission": {
+    "action": "workunit:execute",
+    "resource": "organization:team-alpha:workunits:*",
+    "effect": "allow",
+    "condition": null,
+    "relationship_constraint": null
+  },
+  "provenance": [
+    "template:role.exec.executor:v1.0.0",
+    "template:role.exec.base:v1.0.0",
+    "scope_resolution",
+    "boundary:pb-default-org"
+  ],
+  "resolved_at": "2024-01-15T10:00:00Z"
+}
+```
+
+---
+
+## 6. Role Lifecycle
+
+### 6.1 RoleTemplate Lifecycle
+
+RoleTemplates progress through a four-state lifecycle that governs their availability for assignment.
+
+```mermaid
+stateDiagram-v2
+    [*] --> draft : create_template
+    draft --> draft : edit
+    draft --> published : publish
+    published --> deprecated : deprecate
+    published --> published : publish_patch_version
+    deprecated --> deprecated : publish_patch_version
+    deprecated --> retired : retire
+    deprecated --> published : undeprecate
+    retired --> [*] : archive
+```
+
+**State definitions:**
+
+| State | Description |
+|---|---|
+| `draft` | The template is under development. It MAY be edited freely. Draft templates SHALL NOT be used in new RoleAssignments. Draft templates are visible only to their authors and authorized reviewers. |
+| `published` | The template is available for assignment. Published templates are immutable; any change creates a new version. New RoleAssignments MAY reference published templates. |
+| `deprecated` | The template is still functional but SHOULD NOT be used for new assignments. Existing assignments continue to operate. Deprecated templates SHOULD include a `deprecation_notice` in metadata recommending a replacement template. |
+| `retired` | The template is no longer functional. Existing assignments referencing retired templates SHOULD be migrated. No new assignments MAY reference retired templates. |
