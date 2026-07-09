@@ -9,13 +9,107 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Planned
-- AESP-0001: AEO Core Model
 - AESP-0002: Agent Roles
 - AESP-0003: Communication Protocols
 - AESP-0004: Memory Systems
 - AESP-0005: Workflow Orchestration
 - AESP-0006: Knowledge Graph
 - AESP-0007 through AESP-0015
+
+## [0.3.0] — 2026-07-09
+
+### Added — AESP-0001: Autonomous Engineering Organization Core Model
+
+This release delivers the foundational data model for all Autonomous Engineering
+Organizations — a ~31,000-word specification defining the five core entities
+(Agent, Organization, Role, WorkUnit, Capability) and their relationships,
+lifecycle models, resource management, and persistence mechanisms.
+
+#### Specification Content (AESP-0001)
+
+**Section 1: Introduction** — Specification positioning within the AESP family,
+relationship to the Constitution, scope definition, terminology, and conformance
+criteria. Includes Mermaid diagram of AESP specification dependencies.
+
+**Section 2: Agent Model** — Agent definition grounded in the Actor Model,
+four agent types (worker, coordinator, human_proxy, system), full 8-state
+lifecycle state machine with Mermaid diagram, URN-based identity and addressing,
+Agent Cards (JSON metadata for capability discovery), agent configuration model,
+and BDI-inspired state model (Beliefs, Desires, Intentions).
+
+**Section 3: Organization Model** — Five organizational topologies (flat,
+hierarchical, mesh, pipeline, hybrid) with Mermaid diagrams for each, topology
+comparison table, organization lifecycle states, governance mode binding
+(HITL/HOTL/HOOTL), and policy attachment points.
+
+**Section 4: Role Model** — Role definition with inheritance hierarchy,
+permission model using action:resource:condition patterns with allow/deny
+effects, approval matrix for multi-person authorization, resource quota defaults,
+RBAC design patterns, and role assignment lifecycle.
+
+**Section 5: WorkUnit Model** — HTN-inspired hierarchical task decomposition,
+10-state WorkUnit lifecycle with Mermaid diagram, priority-based scheduling,
+optional Contract Net Protocol for dynamic task delegation, delegation chains,
+retry policies with configurable backoff, and timeout handling.
+
+**Section 6: Capability Model** — Capability definition with JSON Schema
+interface contracts, discovery mechanisms, sequential/parallel/conditional
+composition patterns, capability versioning, and required resource declarations.
+
+**Section 7: Resource Model** — Six resource types (compute, memory, tokens,
+storage, network, time) with units, three allocation strategies (quota-based,
+burst, unlimited), resource monitoring metrics, backpressure mechanisms
+(4 strategies), resource inheritance through organizational hierarchy, and
+resource lifecycle management.
+
+**Section 8: State and Persistence** — Three-layer state classification
+(entity, runtime, derived), state transition validation, event sourcing as
+required persistence mechanism (event stream is source of truth), 6 event
+categories with required event types, CRDT requirements for distributed state
+with CAP theorem positioning (AP for operational state, CP for identity),
+snapshotting requirements, and Mermaid event flow diagram.
+
+**Section 9: JSON Schema Definitions** — Complete JSON Schema Draft 2020-12
+definitions for all 5 core entities (Agent, Organization, Role, WorkUnit,
+Capability) with full property specifications, required fields, and cross-references.
+
+**Section 10: Examples** — Four comprehensive examples with complete JSON:
+Software Development Organization (flat), Hierarchical Data Processing Pipeline,
+Human-in-the-Loop Approval Flow (finance), and Capability Composition.
+
+**Section 11: Counter-Examples** — Seven anti-patterns with incorrect code,
+explanation of violations, and corrections: Missing Capability Declaration,
+Circular Role Inheritance, Invalid State Transition, Hard-Coded Agent IDs,
+Unlimited Production Quotas, Missing Approval Matrix, Flat Topology for
+Complex Domains.
+
+**Section 12: Best Practices** — 20 production recommendations across four
+categories: Agent Design (5), Organization Design (5), WorkUnit Design (5),
+and Security (5).
+
+**Section 13: Security Considerations** — Authentication and authorization
+requirements, human oversight controls (approval gates, emergency stop, audit
+logging, anomaly detection), data protection (encryption in transit/at rest,
+data minimization, retention), supply chain security, and DoS prevention.
+
+**Section 14: Future Work** — Table of 15 planned specifications with domain
+classification and descriptions, plus 4 research directions (formal verification,
+emergent behavior, human-agent teaming, cross-organization trust).
+
+#### Appendices
+- **Appendix A**: Complete resource quota configuration example (JSON)
+- **Appendix B**: 5 Architecture Decision Records (Actor Model, RBAC, HTN,
+  Content-Addressable Identifiers, CRDTs)
+- **Appendix C**: Migration Guide (5-phase, 8-week plan for ad-hoc to
+  AESP-0001 compliance, plus version migration procedures)
+
+#### Assets
+- `specification/AESP-0001.md` — Sections 1-2, 27,582 bytes
+- `specification/AESP-0001-continued.md` — Sections 3-6, 27,386 bytes
+- `specification/AESP-0001-reference.md` — Sections 7-14 + Appendices, 48,520 bytes
+- `specification/aesp-0001.yaml` — AESP-0001 metadata file
+- 3 Mermaid diagrams + 1 event flow diagram
+- 5 complete JSON Schemas
 
 ## [0.2.0] — 2026-07-09
 
