@@ -1,0 +1,53 @@
+# aesp.yaml - AESP-0002: Agent Roles Metadata
+# Version 1.0.0-draft
+
+specNumber: "AESP-0002"
+title: "Agent Roles"
+shortTitle: "Agent Roles"
+version: "1.0.0-draft"
+state: "draft"
+maturity: "experimental"
+domain: "DC-Core"
+
+authors:
+  - name: "AESP Standards Committee"
+    email: "standards@aesp.dev"
+    organization: "AESP Initiative"
+    role: "editor"
+
+created: "2026-07-09"
+lastUpdated: "2026-07-09"
+
+dependencies:
+  - spec: "AESP-0000"
+    relationship: "governed-by"
+    required: true
+  - spec: "AESP-0001"
+    relationship: "extends"
+    required: true
+
+relatedSpecs:
+  - number: "AESP-0003"
+    relationship: "enables"
+    description: "Workflow & Handoffs uses role assignments"
+  - number: "AESP-0004"
+    relationship: "enables"
+    description: "Agent Communication uses role-based routing"
+  - number: "AESP-0007"
+    relationship: "informs"
+    description: "Security & Governance extends RBAC+ model"
+
+implements:
+  - spec: "AESP-0001"
+    section: "§4"
+    description: "Extends the Role entity into RoleTemplate and RoleAssignment"
+
+extensions:
+  x-aesp-word-count: "~28000"
+  x-aesp-mermaid-diagrams: "11"
+  x-aesp-json-schemas: "7"
+  x-aesp-standard-roles: "12"
+  x-aesp-pages: "~110"
+  x-aesp-rendered-spec-part1: "https://github.com/kishoreHQ/AESP/blob/main/specification/AESP-0002.md"
+  x-aesp-rendered-spec-part2: "https://github.com/kishoreHQ/AESP/blob/main/specification/AESP-0002-continued.md"
+  x-aesp-rendered-spec-part3: "https://github.com/kishoreHQ/AESP/blob/main/specification/AESP-0002-reference.md"
