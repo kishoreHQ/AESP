@@ -438,3 +438,176 @@ The ABAC layer filters permissions based on runtime context using Common Express
 **Condition evaluation.** For each permission with a non-null `condition`:
 - The system SHALL evaluate the CEL expression against the current request context.
 - If the expression evaluates to `true`, the permission passes the ABAC layer.
+- If the expression evaluates to `false`, the permission SHALL be filtered out (not passed to subsequent layers).
+- If the expression evaluation fails (e.g., missing required context variable), the permission SHALL be treated as `"deny"` and filtered out.
+
+Permissions without a `condition` (or with `condition: null`) SHALL pass the ABAC layer unconditionally.
+
+**Example — ABAC Condition:**
+
+```json
+{
+  "action": "workunit:deploy",
+  "resource": "organization:{org_id}:workunits:*",
+  "effect": "allow",
+  "condition": "time.of_day >= '09:00' && time.of_day <= '17:00' && agent.trust_level >= 0.7",
+  "relationship_constraint": null
+}
+```
+
+This permission allows deployment only during business hours and only for agents with a trust level of 0.7 or higher.
+
+### 5.4 ReBAC Relationships — Tuple Format and Resolution
+
+The ReBAC layer filters permissions based on relationship tuples stored in a relation graph. This enables relationship-aware access control (e.g., "allow access to resources owned by the agent" or "allow access if the agent is a member of the resource's team").
+
+**Relationship tuple format.** ReBAC tuples use a JSON-based representation inspired by Zanzibar:
+
+```json
+{
+  "object": "{resource_type}:{resource_id}",
+  "relation": "{relation_name}",
+  "subject": "{subject_type}:{subject_id}"
+}
+```
+
+Examples:
+- `{"object": "workunit:wu-001", "relation": "owner", "subject": "agent:builder-001"}` — Agent `builder-001` owns work unit `wu-001`.
+- `{"object": "organization:team-alpha", "relation": "member", "subject": "agent:reviewer-002"}` — Agent `reviewer-002` is a member of `team-alpha`.
+- `{"object": "task:task-123", "relation": "delegate", "subject": "agent:builder-001"}` — Agent `builder-001` has been delegated access to task `task-123`.
+
+**ReBACConstraint format.** A permission's `relationship_constraint` field references a relationship tuple pattern:
+
+| Field | Type | Description |
+|---|---|---|
+| `object` | string | The resource object pattern. May use placeholders like `{resource.id}`. |
+| `relation` | string | The relationship name that must exist. |
+| `subject` | string | The subject pattern. May use `{agent.id}` to reference the requesting agent. |
+
+**Relationship resolution.** For each permission with a non-null `relationship_constraint`:
+- The system SHALL query the ReBAC tuple store for a tuple matching the constraint pattern.
+- If a matching tuple exists, the permission passes the ReBAC layer.
+- If no matching tuple exists, the permission SHALL be filtered out.
+- If the ReBAC store is unavailable, the permission SHALL be treated as `"deny"` (fail-closed).
+
+**Common ReBAC patterns:**
+
+| Pattern | Constraint | Purpose |
+|---|---|---|
+| Ownership | `{"object": "{resource.id}", "relation": "owner", "subject": "{agent.id}"}` | Agent can access resources it owns. |
+| Membership | `{"object": "{resource.org}", "relation": "member", "subject": "{agent.id}"}` | Agent can access resources in organizations it belongs to. |
+| Delegation | `{"object": "{resource.id}", "relation": "delegate", "subject": "{agent.id}"}` | Agent can access resources delegated to it. |
+| Created By | `{"object": "{resource.id}", "relation": "creator", "subject": "{agent.id}"}` | Agent can access resources it created. |
+
+**Example — ReBAC Permission:**
+
+```json
+{
+  "action": "task:modify",
+  "resource": "workunit:{wu_id}:tasks:*",
+  "effect": "allow",
+  "condition": null,
+  "relationship_constraint": {
+    "object": "{resource.id}",
+    "relation": "owner",
+    "subject": "{agent.id}"
+  }
+}
+```
+
+### 5.5 PBAC Governance — Permission Boundaries
+
+The PBAC layer applies governance constraints through PermissionBoundaries (ADR-7). A PermissionBoundary defines a maximum permission ceiling: an agent's effective permissions SHALL NOT exceed the boundary's `max_permissions`, regardless of what role assignments grant.
+
+**PermissionBoundary entity:**
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `id` | string | yes | Unique boundary identifier. |
+| `name` | string | yes | Human-readable boundary name. |
+| `max_permissions` | Permission[] | yes | The permission ceiling. The agent's effective permissions are bounded by the intersection with this set. |
+| `scope` | Scope | yes | Where the boundary applies. |
+| `priority` | integer | yes | Evaluation priority. Lower values are evaluated first. |
+| `metadata` | object | no | Timestamps, audit info. |
+
+**Example — PermissionBoundary:**
+
+```json
+{
+  "id": "pb-default-org",
+  "name": "Default Organization Boundary",
+  "max_permissions": [
+    { "action": "*", "resource": "organization:org-001:*", "effect": "allow" },
+    { "action": "organization:delete", "resource": "organization:org-001", "effect": "deny" }
+  ],
+  "scope": { "type": "organization", "id": "org-001" },
+  "priority": 100
+}
+```
+
+**Effective boundary computation.** An agent's effective permission boundary is the intersection of all applicable boundaries:
+
+1. The boundary attached directly to the agent (if any).
+2. The boundary attached to the agent's organization (if any).
+3. The boundary attached to the current work unit (if any).
+4. The system default boundary (always present).
+
+The intersection is computed pair-wise using the `intersect_boundaries` operation. Changes to any boundary propagate immediately to the effective boundary.
+
+**Boundary intersection rules:**
+
+| Operation | Behavior |
+|---|---|
+| `intersect_permissions(granted, boundary)` | Result contains only permissions where `(action, resource)` exists in BOTH sets, with the more restrictive condition. |
+| `intersect_boundaries(b1, b2)` | Result is a new boundary whose `max_permissions` = `intersect_permissions(b1.max_permissions, b2.max_permissions)`. |
+| Wildcard handling | `"task:*"` intersected with `"task:execute"` yields `"task:execute"`. `"*:*"` intersected with `"task:execute"` yields `"task:execute"`. |
+| Deny propagation | A `"deny"` entry in either set for a given `(action, resource)` results in `"deny"` in the intersection. |
+
+### 5.6 Permission Resolution Algorithm
+
+This section specifies the complete permission resolution algorithm that transforms a RoleTemplate's base permissions into the final EffectivePermission set. Implementations MUST produce results equivalent to this algorithm.
+
+**Input:**
+- `assignment`: A RoleAssignment object.
+- `context`: A RequestContext containing the current request's agent, resource, action, time, and relationship data.
+
+**Output:**
+- `EffectivePermission[]`: The final resolved permission set with provenance metadata.
+
+```python
+def resolve_effective_permissions(assignment, context):
+    """
+    Resolve effective permissions for a role assignment in a given context.
+    Processes all four RBAC+ layers in sequence.
+
+    Parameters:
+        assignment: RoleAssignment object
+        context: RequestContext (agent, resource, action, time, relationships)
+
+    Returns:
+        EffectivePermission[] -- the final permission set
+    """
+
+    # ── Step 1: Collect template permissions ──────────────────────────
+    template = load_template(assignment.template_id, assignment.template_version)
+    permissions = copy(template.permissions)
+    provenance = [f"template:{template.id}:v{template.version}"]
+
+    # ── Step 2: Apply role hierarchy (inherit parent permissions) ─────
+    parent = load_template(template.parent_template_id)
+    depth = 0
+    MAX_HIERARCHY_DEPTH = 3
+
+    while parent and depth < MAX_HIERARCHY_DEPTH:
+        permissions.extend(copy(parent.permissions))
+        provenance.append(f"template:{parent.id}:v{parent.version}")
+        parent_id = parent.parent_template_id
+        parent = load_template(parent_id) if parent_id else None
+        depth += 1
+
+    # ── Step 3: Deduplicate ───────────────────────────────────────────
+    # Child overrides parent for same (action, resource) pair.
+    # Preserve the most specific (deepest in hierarchy) permission.
+    deduped = {}
+    for perm in permissions:
+        key = (perm.action, perm.resource)
