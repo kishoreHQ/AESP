@@ -139,3 +139,156 @@ stateDiagram-v2
 | `expired` | The assignment reached its `expires_at` timestamp without renewal. The agent MUST NOT exercise the assignment's permissions. Expired assignments MAY be renewed by creating a new assignment. |
 
 **Transition rules:**
+- A proposed assignment SHALL transition to `active` when all approval requirements are satisfied or when no approval is required.
+- An `active` assignment SHALL transition to `suspended` when its associated agent enters the `suspended` or `terminating` state per AESP-0001.
+- An `active` assignment SHALL transition to `expired` when the current time exceeds `expires_at` (if set).
+- A `suspended` assignment MAY transition back to `active` when the suspension cause is resolved.
+- A `revoked` assignment SHALL NOT transition to any other state.
+- An `expired` assignment SHALL NOT transition to any other state; a new assignment MUST be created for continued authorization.
+
+### 4.5 Time-Bounded Assignments
+
+RoleAssignments MAY have a finite lifetime. The `expires_at` field defines the point after which the assignment automatically transitions to the `expired` state.
+
+**Session management.** When an assignment has an `expires_at` value, the system SHALL:
+- Monitor the expiration timestamp.
+- Transition the assignment to `expired` when `expires_at` is reached.
+- Revoke all active RoleSessions associated with the assignment.
+- Log the expiration event for audit purposes.
+
+**Renewal.** An active time-bounded assignment MAY be renewed before expiration. Renewal updates `expires_at` to a future timestamp and logs the renewal event. The assignment retains its `active` state through renewal.
+
+**Early expiration.** An assignment MAY be manually expired before its `expires_at` timestamp by transitioning it to `revoked`. This is functionally equivalent to revocation.
+
+**Example — Time-Bounded Assignment:**
+
+```json
+{
+  "id": "ra-uuid-5678",
+  "template_id": "role.coord.strategist",
+  "template_version": "1.2.0",
+  "agent_id": "urn:aeo:agent:planner-003",
+  "scope": { "type": "workunit", "id": "urn:aeo:wu:sprint-42" },
+  "granted_permissions": [],
+  "effective_permissions": [],
+  "status": "active",
+  "assumed_at": "2024-06-01T09:00:00Z",
+  "expires_at": "2024-06-30T17:00:00Z",
+  "trust_policy": null,
+  "phase_binding": { "phase": "planning", "auto_transition": true },
+  "metadata": { "assigned_by": "system:auto" }
+}
+```
+
+### 4.6 Dynamic Role Assumption via TrustPolicy
+
+RoleAssignments MAY be created dynamically through the TrustPolicy mechanism (ADR-6). TrustPolicies enable **just-in-time (JIT) role elevation**: an agent without a standing assignment to a role MAY assume that role temporarily if it satisfies the conditions defined in a TrustPolicy attached to the role's template.
+
+**TrustPolicy entity.** A TrustPolicy defines the rules for dynamic role assumption:
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `id` | string | yes | Unique trust policy identifier. Format: `tp.{cat}.{name}`. |
+| `name` | string | yes | Human-readable policy name. |
+| `role_template_id` | string | yes | The RoleTemplate this policy governs. |
+| `trusted_agents` | AgentMatcher[] | yes | Patterns matching agents that MAY assume the role. |
+| `conditions` | Condition | no | CEL expression that MUST evaluate to `true` for assumption to proceed. |
+| `duration` | Duration | yes | Maximum session length after assumption. |
+| `require_approval` | ApprovalRequirement | no | If approval is required, defines the approver and timeout. |
+| `metadata` | object | no | Policy purpose, audit info. |
+
+**AgentMatcher Sub-entity:**
+
+| Field | Type | Description |
+|---|---|---|
+| `type` | enum | `"pattern"`, `"explicit"`, or `"role_holder"`. |
+| `match` | string | The matching criteria. For `"pattern"`, a CEL expression against agent attributes. For `"explicit"`, a specific agent URN. For `"role_holder"`, a role template ID. |
+
+**ApprovalRequirement Sub-entity:**
+
+| Field | Type | Description |
+|---|---|---|
+| `approver_role` | string | The RoleTemplate ID of agents that may approve the assumption. |
+| `timeout_seconds` | integer | Maximum time to wait for approval. |
+| `auto_deny_on_timeout` | boolean | If `true`, the assumption is denied when the timeout expires. |
+
+**Dynamic assumption workflow:**
+
+When an agent requests to dynamically assume a role, the system SHALL execute the following steps:
+
+1. **Identify matching TrustPolicies.** Find all TrustPolicies where `role_template_id` matches the requested role and where the requesting agent matches at least one entry in `trusted_agents`.
+2. **Evaluate conditions.** For each matching policy, evaluate the CEL expression in `conditions.cel_expression` against the current request context. Only policies whose conditions evaluate to `true` are eligible.
+3. **Require approval (if configured).** If `require_approval` is set, create an approval workflow and wait for an agent holding the `approver_role` to approve or deny. If `auto_deny_on_timeout` is `true` and the timeout expires, deny the assumption.
+4. **Create RoleSession.** On approval (or if no approval is required), create a RoleSession with:
+   - `started_at` = current time
+   - `expires_at` = current time + `duration.max_seconds`
+   - `status` = `"active"`
+   - `context` referencing the TrustPolicy and approval (if any)
+5. **Create RoleAssignment.** Create a transient RoleAssignment bound to the RoleSession with:
+   - `status` = `"active"`
+   - `trust_policy` populated with the TrustPolicy reference
+   - `elevated_via` = the session or approval identifier
+   - `expires_at` = the session expiration time
+
+**Example — TrustPolicy:**
+
+```json
+{
+  "id": "tp.exec.elevated",
+  "name": "Executor Emergency Elevation",
+  "role_template_id": "role.exec.executor",
+  "trusted_agents": [
+    { "type": "pattern", "match": "agent.trust_level >= 0.8" }
+  ],
+  "conditions": {
+    "cel_expression": "time.of_day >= '09:00' && time.of_day <= '17:00' || incident.severity == 'critical'",
+    "required_context": ["time.of_day", "incident.severity"]
+  },
+  "duration": { "max_seconds": 3600, "extendable": false },
+  "require_approval": {
+    "approver_role": "role.coord.orchestrator",
+    "timeout_seconds": 300,
+    "auto_deny_on_timeout": true
+  },
+  "metadata": { "purpose": "incident_response_break_glass" }
+}
+```
+
+**Example — RoleSession:**
+
+```json
+{
+  "id": "rs-uuid-9012",
+  "assignment_id": "ra-uuid-7890",
+  "started_at": "2024-01-15T14:00:00Z",
+  "expires_at": "2024-01-15T15:00:00Z",
+  "context": {
+    "workunit_id": "wu-alpha-001",
+    "trigger": "trust_policy_assumption",
+    "trust_policy_id": "tp.exec.elevated",
+    "approval_id": "approval-uuid-3456"
+  },
+  "status": "active",
+  "metadata": {
+    "session_token_hash": "sha256:abc123..."
+  }
+}
+```
+
+**Session validity.** A RoleSession SHALL be considered valid only when ALL of the following hold:
+- The parent RoleAssignment is in the `active` state.
+- The current time is within the interval `[started_at, expires_at]`.
+- The session has not been explicitly revoked.
+
+When a session expires or is revoked, the system SHALL transition the parent RoleAssignment to `expired` or `revoked` respectively.
+
+**Assumption chaining depth.** Dynamic role assumption via TrustPolicy SHALL have a maximum chaining depth of 1. A TrustPolicy MAY only grant the directly referenced role template. An agent that dynamically assumes role R MUST NOT use that assumption as the basis for further dynamic assumptions. This constraint prevents privilege escalation chains.
+
+### 4.7 Multiple Assignments
+
+An agent MAY hold multiple RoleAssignments simultaneously. This is a core feature enabling the matrix role model (ADR-3): an agent can hold one role per dimension (delivery, capability, community, system) without conflict.
+
+**Simultaneous assignment rules:**
+- An agent MAY hold any number of assignments across different dimensions simultaneously.
+- An agent MAY hold multiple assignments to the same RoleTemplate if each assignment has a different scope.
+- An agent MUST NOT hold more than one active assignment to the same RoleTemplate in the same scope.
