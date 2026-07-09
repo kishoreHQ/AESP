@@ -1,0 +1,67 @@
+# aesp.yaml - AESP-0001: AEO Core Model Metadata
+# Version 1.0.0-draft
+
+specNumber: "AESP-0001"
+title: "Autonomous Engineering Organization Core Model"
+shortTitle: "AEO Core Model"
+version: "1.0.0-draft"
+state: "draft"
+maturity: "experimental"
+domain: "DC-Core"
+
+authors:
+  - name: "AESP Standards Committee"
+    email: "standards@aesp.dev"
+    organization: "AESP Initiative"
+    role: "editor"
+
+created: "2026-07-09"
+lastUpdated: "2026-07-09"
+
+dependencies:
+  - spec: "AESP-0000"
+    relationship: "governed-by"
+    required: true
+
+relatedSpecs:
+  - number: "AESP-0002"
+    relationship: "depends-on"
+    description: "Agent Roles builds upon the Role model defined here"
+  - number: "AESP-0003"
+    relationship: "depends-on"
+    description: "Communication Protocols uses Agent and Organization models"
+  - number: "AESP-0004"
+    relationship: "depends-on"
+    description: "Memory Systems uses Agent model"
+  - number: "AESP-0005"
+    relationship: "depends-on"
+    description: "Workflow Orchestration uses WorkUnit model"
+  - number: "AESP-0006"
+    relationship: "depends-on"
+    description: "Knowledge Graph uses Organization model"
+  - number: "AESP-0007"
+    relationship: "depends-on"
+    description: "Tool Integration uses Capability model"
+  - number: "AESP-0011"
+    relationship: "depends-on"
+    description: "Multi-Org Federation uses Organization model"
+  - number: "AESP-0013"
+    relationship: "depends-on"
+    description: "Security extends the permission model"
+  - number: "AESP-0015"
+    relationship: "depends-on"
+    description: "Migration provides migration guidance for this spec"
+
+implements:
+  - spec: "AESP-0000"
+    section: "§3.2"
+    description: "Implements the five core AEO entities (Agent, Organization, Role, WorkUnit, Capability)"
+
+extensions:
+  x-aesp-word-count: "~31000"
+  x-aesp-mermaid-diagrams: "3"
+  x-aesp-json-schemas: "5"
+  x-aesp-pages: "~120"
+  x-aesp-rendered-spec-part1: "https://github.com/kishoreHQ/AESP/blob/main/specification/AESP-0001.md"
+  x-aesp-rendered-spec-part2: "https://github.com/kishoreHQ/AESP/blob/main/specification/AESP-0001-continued.md"
+  x-aesp-rendered-spec-part3: "https://github.com/kishoreHQ/AESP/blob/main/specification/AESP-0001-reference.md"
