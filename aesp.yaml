@@ -1,0 +1,58 @@
+# aesp.yaml - AESP-0000 Constitution Metadata
+# Version 1.0.0-draft
+
+specNumber: "AESP-0000"
+title: "Constitution of the Autonomous Engineering Specification"
+shortTitle: "Constitution"
+version: "1.0.0-draft"
+state: "draft"
+maturity: "experimental"
+domain: "DC-Core"
+
+authors:
+  - name: "AESP Standards Committee"
+    email: "standards@aesp.dev"
+    organization: "AESP Initiative"
+    role: "editor"
+
+created: "2026-07-09"
+lastUpdated: "2026-07-09"
+
+relatedSpecs:
+  - number: "AESP-0001"
+    relationship: "governs"
+  - number: "AESP-0002"
+    relationship: "governs"
+  - number: "AESP-0003"
+    relationship: "governs"
+  - number: "AESP-0004"
+    relationship: "governs"
+  - number: "AESP-0005"
+    relationship: "governs"
+  - number: "AESP-0006"
+    relationship: "governs"
+  - number: "AESP-0007"
+    relationship: "governs"
+  - number: "AESP-0008"
+    relationship: "governs"
+  - number: "AESP-0009"
+    relationship: "governs"
+  - number: "AESP-0010"
+    relationship: "governs"
+  - number: "AESP-0011"
+    relationship: "governs"
+  - number: "AESP-0012"
+    relationship: "governs"
+  - number: "AESP-0013"
+    relationship: "governs"
+  - number: "AESP-0014"
+    relationship: "governs"
+  - number: "AESP-0015"
+    relationship: "governs"
+
+extensions:
+  x-aesp-word-count: "~21000"
+  x-aesp-mermaid-diagrams: "12"
+  x-aesp-pages: "~80"
+  x-aesp-rendered-spec: "https://github.com/kishoreHQ/AESP/blob/main/specification/AESP-0000.md"
+  x-aesp-supplement: "https://github.com/kishoreHQ/AESP/blob/main/specification/AESP-0000-supplement.md"
