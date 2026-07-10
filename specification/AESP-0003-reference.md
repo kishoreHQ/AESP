@@ -693,4 +693,130 @@ The ESAA (Event Sourcing for Autonomous Agents) architecture demonstrates practi
 
 ### 10.4.3 Conversation Thread Management
 
-REQ-075 mandates conversation thread management for multi-turn interactions. In multi-agent systems, threads branch: a supervisor initiates a thread, workers create sub-threads for su
+REQ-075 mandates conversation thread management for multi-turn interactions. In multi-agent systems, threads branch: a supervisor initiates a thread, workers create sub-threads for subtasks, and results are merged back. AESP-0003 threads are structured as follows:
+
+Each thread has a `threadId` (UUID) and a `parentThreadId` (null for root threads). Messages within a thread carry monotonic sequence numbers. Subtask delegations create child threads linked by `parentThreadId`, forming a thread tree that mirrors the delegation tree. Thread state is maintained in the event log: each message is an event, thread creation and archival are events, and thread branching is explicit through `parentThreadId` references. This design enables replay of any conversation path for debugging and compliance.
+
+## 10.5 Consensus and Fault Tolerance
+
+When agents must agree on a decision — a diagnosis, a plan, or a state value — consensus protocols ensure correctness despite failures. This section specifies the requirements for Byzantine fault tolerance, leader election, and quality gates.
+
+### 10.5.1 Byzantine Fault Tolerant Consensus
+
+The fundamental threshold for Byzantine Fault Tolerant (BFT) systems is $n \geq 3f + 1$: a system with $n$ agents can tolerate up to $f$ Byzantine (arbitrarily faulty) agents [^26^]. Experimental validation with LLM-based agents demonstrates 100% consensus accuracy with up to 33% Byzantine nodes, with mean consensus latency of 45.7 ms and full network coverage within three gossip hops [^26^].
+
+The CP-WBFT (Confidence Probe-Based Weighted Byzantine Fault Tolerance) extension achieves superior consensus performance across diverse network topologies under extreme Byzantine conditions (85.7% fault rate), surpassing traditional methods [^27^]. CP-WBFT employs probe-based weighted information flow transmission, leveraging the observation that LLM-based agents demonstrate stronger skepticism when processing erroneous message flows, enabling them to outperform traditional BFT agents.
+
+The following JSON Schema defines the ConsensusMessage exchanged during BFT rounds:
+
+```json
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ConsensusMessage",
+  "type": "object",
+  "required": ["round", "phase", "sender", "proposal", "signature"],
+  "properties": {
+    "round": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Consensus round number"
+    },
+    "phase": {
+      "type": "string",
+      "enum": ["PRE-PREPARE", "PREPARE", "COMMIT", "VIEW-CHANGE"],
+      "description": "PBFT phase"
+    },
+    "sender": {
+      "type": "string",
+      "description": "Agent identifier of the sender"
+    },
+    "proposal": {
+      "type": "object",
+      "required": ["value", "digest"],
+      "properties": {
+        "value": { "type": "object", "description": "The proposed value (opaque to consensus)" },
+        "digest": { "type": "string", "description": "SHA-256 digest of the canonicalized value" }
+      }
+    },
+    "justification": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "round": { "type": "integer" },
+          "phase": { "type": "string" },
+          "sender": { "type": "string" },
+          "digest": { "type": "string" }
+        }
+      },
+      "description": "Quorum certificate justifying this message"
+    },
+    "signature": {
+      "type": "string",
+      "description": "Cryptographic signature of (round || phase || proposal.digest)"
+    },
+    "view": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Current view number (for leader rotation)"
+    },
+    "confidenceScore": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Sender's confidence in proposal (CP-WBFT extension)"
+    }
+  }
+}
+```
+
+The `confidenceScore` field is the CP-WBFT extension: agents weight their votes by confidence, and the consensus algorithm converges on the highest-confidence proposal that achieves a quorum of $2f + 1$ weighted votes. Implementations of BFT consensus MUST verify the signature, check the digest against the proposal value, and validate that the justification contains a quorum certificate from the preceding phase.
+
+### 10.5.2 Leader Election
+
+Leader election designates a single agent to propose decisions that others validate, eliminating the token duplication problem in which multiple agents independently generate competing solutions [^25^]. Analyses of major multi-agent frameworks show duplication rates of 72% in MetaGPT, 86% in CAMEL, and 53% in AgentVerse [^25^]. Leader election reduces these rates to near zero by ensuring that only the leader generates proposals; other agents evaluate rather than compete.
+
+AESP-0003 RECOMMENDS leader election for any consensus round involving more than three agents. The leader MAY be elected by a deterministic function (e.g., the agent with the highest capability score for the task at hand), by random selection, or by a formal leader election protocol such as Raft or the improved PBFT-Raft hybrid that achieves secure consensus control in multi-agent systems by combining PBFT's fault tolerance with Raft's high communication efficiency [^29^].
+
+### 10.5.3 Quality Gates
+
+Quality gates are validation checkpoints at each stage of a multi-agent pipeline, enabling quality-critical processes to fail fast when outputs do not meet criteria [^3^]. AESP-0003 defines three gate types: schema validation (output conforms to expected structure), semantic check (output meaning satisfies criteria via faithfulness scoring or reference comparison), and human approval (execution pauses at `input-required` state for human review). Gates MAY be combined: a typical pipeline runs schema validation first (cheap), semantic check second (moderate cost), and human approval last (expensive).
+
+**Table 10.3: Task Lifecycle State Transitions**
+
+| From State | Trigger Event | To State | Preconditions | Post-conditions |
+|---|---|---|---|---|
+| `pending` | Supervisor delegates task | `assigned` | Worker pool has capacity | Worker ACK received |
+| `assigned` | Worker begins execution | `in_progress` | Input validated | Deadline timer started |
+| `in_progress` | Worker submits output | `validating` | Output non-empty | Quality gate invoked |
+| `validating` | Schema check passes | `semantic_check` | Output matches schema | Semantic scorer invoked |
+| `validating` | Schema check fails | `failed` | Output malformed | Error logged, retry count < max |
+| `semantic_check` | Semantic check passes | `awaiting_approval` | Score ≥ threshold | Human queue entry created |
+| `semantic_check` | Semantic check fails | `failed` | Score < threshold | Escalation flag set |
+| `awaiting_approval` | Human approves | `completed` | Approval token valid | Result published |
+| `awaiting_approval` | Human rejects | `failed` | Rejection reason logged | Compensation triggered |
+| `awaiting_approval` | Timeout (no response) | `auto_approved` | Auto-approve policy enabled | Result published with flag |
+| `failed` | Retry count < max | `assigned` | Retry policy permits | New worker MAY be selected |
+| `failed` | Retry count ≥ max | `cancelled` | Max retries exhausted | Saga compensation invoked |
+| `in_progress` | Worker reports failure | `failed` | Worker signals error | Error details captured |
+| `in_progress` | Deadline expires | `failed` | Absolute deadline passed | Timeout error recorded |
+
+Table 10.3 defines the complete task lifecycle state machine required by REQ-071. The states `validating`, `semantic_check`, and `awaiting_approval` are the quality gate stages; not all pipelines use all three. The `auto_approved` state exists for low-risk deployments where human approval latency is unacceptable. The transition from `failed` back to `assigned` (retry) MUST be guarded by a deduplication check using the idempotency key from the original TaskDelegation message. Saga compensation from `cancelled` follows the pattern defined in Chapter 7, Section 7.3.
+
+## 10.6 Cross-Organizational Communication
+
+REQ-076 requires cross-organizational communication patterns where agents in different Agent-Enabled Organizations (AEOs) or security domains can collaborate. This section specifies trust federation, data sovereignty, and agent-to-human interaction patterns.
+
+### 10.6.1 Trust Federation Between AEOs
+
+Cross-organizational agent collaboration requires that agents in one AEO authenticate and authorize agents in another AEO. The IETF Agent Identity Protocol (AIP, draft-prakash-aip-00) introduces Invocation-Bound Capability Tokens (IBCTs) that fuse identity, attenuated authorization, and provenance into a single append-only token chain [^25^]. IBCTs achieve 100% attack rejection across 600 adversarial tests by binding each capability grant to a specific invocation context.
+
+AESP-0003 specifies that cross-AEO authentication MUST use one of three mechanisms: (1) mutual TLS with certificate authorities trusted by both AEOs; (2) IBCT delegation chains where each hop attenuates the capability scope; or (3) DID-based authentication (ANP's `did:wba` method) achieving 0-RTT single-request authentication for decentralized trust [^25^]. Capability translation between AEOs with different capability vocabularies MUST use a published mapping registry; AESP-0003 agents MUST advertise their supported capability namespaces during the discovery handshake.
+
+### 10.6.2 Data Sovereignty
+
+Data sovereignty is the requirement that certain data must not leave a geographic or administrative boundary. AESP-0003 addresses data sovereignty through classification-based routing: each message carries a `dataClassification` field (values: `public`, `internal`, `confidential`, `restricted`) and a `residencyRequirement` field (ISO 3166 country code or `none`). Agents MUST reject messages whose classification exceeds their authorized clearance, and routing infrastructure MUST enforce that `restricted` data never traverses network paths outside the specified residency region.
+
+### 10.6.3 Agent-to-Human Primitives
+
+Human-in-the-loop interaction is required for safety-critical decisions and quality gates. AESP-0003 defines three ag
