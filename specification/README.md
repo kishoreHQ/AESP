@@ -128,7 +128,7 @@ graph TD
     style A0005 fill:#e1f5fe
 ```
 
-For the Agent OS control loop, correlation keys, and Hermes recommended levels, see **[ARCHITECTURE.md](ARCHITECTURE.md)**. For suite-level conformance profiles, see **[CONFORMANCE.md](CONFORMANCE.md)**.
+For the Agent OS control loop, correlation keys, and Hermes recommended levels, see **[ARCHITECTURE.md](ARCHITECTURE.md)**. For suite-level conformance profiles, see **[CONFORMANCE.md](CONFORMANCE.md)**. For working-group gap analysis and dispositions, see **[GAP-ANALYSIS.md](GAP-ANALYSIS.md)**. Shared event types: **[EVENT-REGISTRY.md](EVENT-REGISTRY.md)**.
 
 ## How to Read the Specifications
 

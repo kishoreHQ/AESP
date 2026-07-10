@@ -9,8 +9,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Planned
-- Phase 4 ecosystem (reference implementations, conformance suites)
+- Phase 4 ecosystem (reference implementations, conformance suites, REQ linter)
+- JSON Schema bundle for session objects
 - Community review toward STABLE
+
+## [1.8.0] — 2026-07-10
+
+### Added — Gap Analysis Pass & Protocol Hardening
+
+Working-group gap analysis against Hermes Agent OS / Mission Control goals (not only title completion through AESP-0015).
+
+#### Analysis artifacts
+
+- `specification/GAP-ANALYSIS.md` — gap register GAP-001…017 with severity and dispositions
+- `specification/EVENT-REGISTRY.md` — baseline `aesp.*` event types across the suite
+
+#### Normative closures
+
+- **AESP-0015**: tool invocation runtime contract, provider fallback/routing, suite version advertise, plan artifact binding (`INT-REQ-063`–`INT-REQ-079`)
+- **AESP-0010**: agent/system evaluation campaigns (`TEST-REQ-138`–`TEST-REQ-143`)
+- **AESP-0013**: untrusted tool-result trust labels; production paths require security baseline (`SEC-REQ-056`–`SEC-REQ-058`)
+- **AESP-0014**: cancel/approve races and double-claim rules (`HITL-REQ-051`–`HITL-REQ-052`)
+
+#### Consistency
+
+- AESP-0013 added to production-path YAML dependencies (0007–0012, 0015)
+- Corrected outdated relatedSpecs labels in `aesp-0001.yaml` / `aesp-0002.yaml`
+- ARCHITECTURE extended with plan surface, tool boundary, tenant model, security cross-cut rule
+- CONFORMANCE Hermes profile updated for tool records and optional KG L2
 
 ## [1.7.1] — 2026-07-10
 

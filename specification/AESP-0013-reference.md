@@ -40,13 +40,19 @@ Anti-patterns: shared root API keys for all agents; production tools in sandbox 
 
 `SEC-REQ-055`: Tests MUST include step-up denial for elevated tools without approval.
 
+`SEC-REQ-056`: Tool results labeled `untrusted` (AESP-0015) MUST NOT be eligible to authorize privileged actions without an intervening policy decision or human approval.
+
+`SEC-REQ-057`: When model context includes tool outputs, implementations MUST preserve trust labels across turns or reclassify content as untrusted by default.
+
+`SEC-REQ-058`: Production profiles that claim AESP-0007–AESP-0012 or AESP-0015 conformance MUST also meet at least AESP-0013 L1 (security baseline).
+
 ## 12. Appendices
 
 ### Baseline Audit Event Types
 `authn.success`, `authn.failure`, `authz.deny`, `secret.read`, `policy.change`, `breakglass.activate`, `artifact.admit`, `artifact.deny`.
 
 ### Requirement Index
-`SEC-REQ-001`–`SEC-REQ-055`.
+`SEC-REQ-001`–`SEC-REQ-058`.
 
 # References
 

@@ -61,3 +61,41 @@ The Model Context Protocol (MCP) standardizes tools, resources, and prompts for 
 `INT-REQ-047`: Timeouts MUST be configurable per connector class.
 
 `INT-REQ-048`: Dead-letter queues MAY hold failed integration events; poison messages MUST be inspectable without silent drop.
+
+## 8.5 Tool Invocation Runtime Contract
+
+This section closes the gap between AESP-0001 Capabilities, MCP tools, and security policy. Every tool call in a production Agent OS MUST be representable as a tool invocation record.
+
+`INT-REQ-063`: A tool invocation record MUST include: `invocationId`, `toolName` (optionally connector-prefixed), `principalId`, `workUnitId` when known, `arguments` (redacted per policy), `policyDecision` (`allow`/`deny` + policy version), `startedAt`, `endedAt`, `status`, and `resultRef` or error class.
+
+`INT-REQ-064`: Tool arguments and results derived from untrusted content MUST carry a trust label (`trusted`, `untrusted`, `mixed`). Untrusted results MUST NOT be treated as authoritative system facts without validation.
+
+`INT-REQ-065`: Denied invocations MUST still emit an audit/security event and MUST NOT execute side effects.
+
+`INT-REQ-066`: Tool timeouts MUST be enforced; on timeout the invocation status MUST be `timeout` and compensating cancellation SHOULD be attempted when supported.
+
+`INT-REQ-067`: Side-effect class (`read`, `write`, `admin`) declared by the tool MUST be enforced by authorization policy before execution.
+
+## 8.6 Provider Routing and Fallback
+
+`INT-REQ-068`: A provider route MAY declare an ordered fallback list of provider/model pairs.
+
+`INT-REQ-069`: Fallback MUST record `aesp.provider.fallback` (or equivalent) with from/to provider ids and reason (`unavailable`, `rate_limited`, `timeout`, `policy`).
+
+`INT-REQ-070`: Silent fallback without recording the effective provider/model used for a completion is non-conformant.
+
+`INT-REQ-071`: When a WorkUnit requires sticky model selection, fallback to a different model family MUST be denied unless policy allows and the change is audited.
+
+`INT-REQ-072`: Cost or token budgets attached to a WorkUnit or principal MUST be checked before provider invocation; exhaustion MUST fail closed with structured error `policy_denied` or a dedicated budget class.
+
+## 8.7 Suite Version Advertise
+
+`INT-REQ-073`: An AESP runtime SHOULD advertise its supported AESP suite version set (for example max draft version per spec family) via discovery metadata.
+
+`INT-REQ-074`: Peers negotiating features MUST fail closed when a required suite feature is missing, with a structured error identifying the missing feature.
+
+## 8.8 Plan Artifact Binding
+
+`INT-REQ-075`: When an agent produces a multi-step plan for a WorkUnit, the plan MUST be storable as a versioned artifact with: goal, steps[], assumptions[], successCriteria[], and revision history, referenced by the WorkUnit or workflow instance.
+
+`INT-REQ-076`: Plan revisions MUST not erase prior revisions required for audit; supersession pointers are REQUIRED.

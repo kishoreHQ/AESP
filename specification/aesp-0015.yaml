@@ -6,4 +6,4 @@ version: "0.1.0"
 authors: ["AESP Technical Committee"]
 date: "2026-07-10"
 description: "Specifies integration architecture, LLM provider bindings (OpenAI-compatible, Anthropic-compatible, local), MCP profiles, plugins, capability discovery, version negotiation, reliability, security, and conformance for Agent OS interoperability."
-dependencies: ["AESP-0000", "AESP-0001", "AESP-0002", "AESP-0003"]
+dependencies: ["AESP-0013", "AESP-0000", "AESP-0001", "AESP-0002", "AESP-0003"]

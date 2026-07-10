@@ -41,10 +41,16 @@ Recommended for Hermes Agent OS production pilots:
 | Area | Spec levels |
 |:---|:---|
 | Kernel | 0001 + 0002 + 0003 + 0005 (durable) + 0013 L2 |
-| Cognition | 0004 L2 + 0006 L1 |
+| Cognition | 0004 L2 + 0006 L1 (use **0006 L2** for knowledge-heavy products) |
 | Delivery | 0007 L2 + 0008 L1 + 0010 L2 + 0009 L2 |
 | Operations | 0011 L2 + 0012 L2 + 0014 L2 |
-| Ecosystem | 0015 L2 (provider + MCP client) |
+| Ecosystem | 0015 L2 (provider + MCP client + **tool invocation records**) |
+
+Additional Hermes expectations after gap pass:
+
+- Provider fallback audited when multi-provider  
+- Plan artifacts for multi-step WorkUnits  
+- Evaluation campaigns before promoting agent/plugin versions (0010)
 
 ### 2.3 `aesp.profile.mission-control`
 

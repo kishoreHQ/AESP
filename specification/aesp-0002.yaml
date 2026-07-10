@@ -29,13 +29,16 @@ dependencies:
 relatedSpecs:
   - number: "AESP-0003"
     relationship: "enables"
-    description: "Workflow & Handoffs uses role assignments"
-  - number: "AESP-0004"
+    description: "Communication Protocols uses role-based authorization"
+  - number: "AESP-0005"
     relationship: "enables"
-    description: "Agent Communication uses role-based routing"
-  - number: "AESP-0007"
+    description: "Workflow Orchestration assigns tasks using roles"
+  - number: "AESP-0013"
     relationship: "informs"
-    description: "Security & Governance extends RBAC+ model"
+    description: "Security & Compliance extends RBAC+ into PDP/PEP policy"
+  - number: "AESP-0014"
+    relationship: "enables"
+    description: "Human-in-the-Loop routes tasks using roles and queues"
 
 implements:
   - spec: "AESP-0001"

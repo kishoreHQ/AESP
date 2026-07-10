@@ -61,6 +61,12 @@ Recommended integration surface for Hermes:
 
 `INT-REQ-062`: Interoperability tests SHOULD run a golden suite against mock OpenAI-compatible and mock MCP servers.
 
+`INT-REQ-077`: L2+ implementations MUST implement the tool invocation record (`INT-REQ-063`–`INT-REQ-067`) for gated tool use.
+
+`INT-REQ-078`: L3 implementations MUST implement provider fallback recording and suite version advertise (`INT-REQ-068`–`INT-REQ-074`).
+
+`INT-REQ-079`: Conformance tests MUST include: untrusted tool-result labeling, fallback audit, and budget exhaustion deny.
+
 ## 12. Appendices
 
 ### 12.1 Example Provider Descriptor
@@ -89,7 +95,7 @@ sandbox: restricted
 
 ### 12.3 Requirement Index
 
-`INT-REQ-001` through `INT-REQ-062`.
+`INT-REQ-001` through `INT-REQ-079`.
 
 | Range | Domain |
 |:---|:---|
@@ -99,7 +105,8 @@ sandbox: restricted
 | 031–036 | Plugins |
 | 037–041 | Discovery |
 | 042–048 | Mapping / Reliability |
-| 049–062 | Security / Conformance |
+| 049–062 | Security / Conformance (base) |
+| 063–079 | Tool runtime, fallback, suite version, plan binding, extended conformance |
 
 # References
 

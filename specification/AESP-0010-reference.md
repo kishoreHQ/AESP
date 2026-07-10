@@ -165,6 +165,22 @@ Implementations SHOULD track:
 
 `TEST-REQ-137`: Integration tests with AESP-0009 MUST verify that deploy prechecks can consume evidence packages and reject digest mismatches.
 
+### 11.5 Agent and System Evaluation Campaigns
+
+Software test suites (unit/integration) are necessary but not sufficient for Agent OS quality. Evaluation campaigns assess agent trajectories, costs, and safety.
+
+`TEST-REQ-138`: An evaluation campaign MUST declare: dataset or scenario pack id/version, subject agent or runtime version, metrics (at least task success rate), and budget limits.
+
+`TEST-REQ-139`: Campaign results MUST be immutable evidence packages with subject pins, metric summaries, and per-scenario outcomes.
+
+`TEST-REQ-140`: Safety evaluations (prompt injection, tool abuse) SHOULD be separable from capability evaluations in reporting.
+
+`TEST-REQ-141`: Evaluation campaigns MUST NOT silently mutate production systems; side effects require isolated environments or record/replay harnesses.
+
+`TEST-REQ-142`: When evaluation gates release promotion of an agent/plugin version, gate policy MUST reference campaign evidence package ids.
+
+`TEST-REQ-143`: L3 implementations SHOULD support evaluation campaigns; L2 MAY.
+
 ## 12. Appendices
 
 ### 12.1 Example Gate Policy Pack
@@ -215,7 +231,7 @@ breakGlass:
 
 ### 12.4 Requirement Index
 
-Requirements `TEST-REQ-001` through `TEST-REQ-137` define the normative surface of this draft. Future revisions SHOULD preserve identifiers and append new identifiers rather than renumbering existing requirements.
+Requirements `TEST-REQ-001` through `TEST-REQ-143` define the normative surface of this draft. Future revisions SHOULD preserve identifiers and append new identifiers rather than renumbering existing requirements.
 
 | Range | Domain |
 |:---|:---|
@@ -228,6 +244,7 @@ Requirements `TEST-REQ-001` through `TEST-REQ-137` define the normative surface 
 | `TEST-REQ-094` to `TEST-REQ-106` | Results, Reporting, and Lifecycle |
 | `TEST-REQ-107` to `TEST-REQ-119` | Security and Policy |
 | `TEST-REQ-120` to `TEST-REQ-137` | Implementation and Conformance |
+| `TEST-REQ-138` to `TEST-REQ-143` | Agent/System Evaluation Campaigns |
 
 # References
 

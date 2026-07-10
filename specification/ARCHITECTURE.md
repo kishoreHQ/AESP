@@ -106,13 +106,54 @@ Requirement identifiers are stable; extensions append new numbers.
 
 Named suite profiles (`aesp.profile.hermes-agent-os`, `mission-control`, `build-ship`, `core-runtime`) are defined in [CONFORMANCE.md](CONFORMANCE.md).
 
-## 9. Implementation Checklist (Publication Quality)
+## 9. Plan Artifact (Agent Planning Surface)
+
+Planning is not a separate AESP number in the 0000–0015 set; it is a **first-class artifact** bound to WorkUnits and workflows:
+
+| Field | Purpose |
+|:---|:---|
+| `goal` | Declared intent |
+| `steps[]` | Ordered or graph-linked actions |
+| `assumptions[]` | Beliefs that invalidate the plan if false |
+| `successCriteria[]` | Machine or human checkable outcomes |
+| `revision` | Monotonic plan version |
+
+Normative storage/revision rules: AESP-0015 `INT-REQ-075`–`INT-REQ-076`. Execution of steps typically uses AESP-0005 tasks and AESP-0015 tools/providers.
+
+## 10. Tool Invocation (Runtime Boundary)
+
+Canonical tool call record: AESP-0015 tool invocation contract. Authorization: AESP-0002 + AESP-0013. Telemetry: `aesp.tool.*` in [EVENT-REGISTRY.md](EVENT-REGISTRY.md). Untrusted tool outputs MUST keep trust labels (SEC + INT).
+
+## 11. Tenant / Organization Isolation Model
+
+| Scope | Authority |
+|:---|:---|
+| Organization / tenant id | AESP-0001 Organization |
+| Data classification | AESP-0013 |
+| Telemetry isolation | AESP-0011 L3 |
+| Connector egress | AESP-0015 |
+| Memory scope | AESP-0004 |
+
+Cross-tenant queries and credential reuse are deny-by-default unless explicitly federated.
+
+## 12. Security Cross-Cut Rule
+
+For production profiles, **the stricter of AESP-0013 and the feature spec applies**. YAML dependencies for build/ship/ops/integration paths list AESP-0013 after gap pass GAP-005.
+
+## 13. Gap Analysis
+
+Working group gap register and dispositions: [GAP-ANALYSIS.md](GAP-ANALYSIS.md).
+
+## 14. Implementation Checklist (Publication Quality)
 
 - [ ] All sessions have IRIs and audit trails
 - [ ] Digests pin production artifacts
 - [ ] Gates consume machine-readable evidence (not CI UI alone)
 - [ ] HITL tasks never auto-approve on timeout
 - [ ] Secrets never appear in logs, prompts by default, or provenance
-- [ ] MCP/tools authorized before invoke
+- [ ] MCP/tools authorized before invoke; invocation records persisted
+- [ ] Provider fallback records effective model/provider
 - [ ] WorkUnit correlation present in telemetry
 - [ ] Remediation respects freeze windows and blast-radius caps
+- [ ] Plans versioned when multi-step autonomy is used
+- [ ] Untrusted tool results cannot authorize privileged actions

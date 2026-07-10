@@ -3,7 +3,7 @@
 **Date**: 2026-07-10  
 **Repository**: https://github.com/kishoreHQ/AESP  
 **Branch**: main (worktree may be detached)  
-**Current Status**: **AESP-0000 through AESP-0015 DRAFT complete.** Phase 1–3 specification suite authored. Next: Phase 4 ecosystem (reference implementations, conformance tests) and hardening pilots for Hermes Agent OS.
+**Current Status**: **AESP-0000 through AESP-0015 DRAFT complete** with **gap-analysis pass 2** (`specification/GAP-ANALYSIS.md`). Major gaps (tool runtime, provider fallback, eval harness, security cross-deps, event registry) closed or mitigated. Next: Phase 4 ecosystem (reference implementations, automated conformance) and merge/promote to `main` if not already.
 
 ---
 

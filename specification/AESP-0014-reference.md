@@ -34,13 +34,17 @@ Anti-patterns: approvals in unstructured chat without task id; infinite waits; a
 
 `HITL-REQ-050`: Tests MUST include self-approval denial when forbidden and stale-digest conflict on complete.
 
+`HITL-REQ-051`: If a task is cancelled or expired, a subsequent approve decision MUST be rejected; the conflict MUST be audited.
+
+`HITL-REQ-052`: Concurrent claim races MUST yield exactly one successful claim; losers MUST receive a structured conflict error.
+
 ## 12. Appendices
 
 ### Task Types
 `approve`, `review`, `input`, `intervene`, `acknowledge`.
 
 ### Requirement Index
-`HITL-REQ-001`–`HITL-REQ-050`.
+`HITL-REQ-001`–`HITL-REQ-052`.
 
 # References
 
