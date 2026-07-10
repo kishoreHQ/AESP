@@ -9,7 +9,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Planned
-- AESP-0008 through AESP-0015
+- AESP-0009 through AESP-0015
+
+## [1.0.0] — 2026-07-10
+
+### Added — AESP-0008: Documentation Generator
+
+This release adds the documentation generator specification for autonomous
+engineering organizations, defining documentation request and response
+contracts, multi-source inputs, schema-to-docs and living documentation modes,
+drift detection, multi-format publishing, quality validation, document
+lifecycle, review workflows, security and policy controls, and conformance
+requirements.
+
+#### Specification Content (AESP-0008)
+
+- Defines documentation model architecture with request/session surfaces, source graphs, document identity, session state machine, and structured errors.
+- Specifies source kinds (OpenAPI, schemas, code, configs, workflows, memory, knowledge graph, codegen artifacts) with pinning, access control, and audience rules.
+- Defines generation modes: schema-to-docs, code-to-docs, template, model-driven, hybrid, living, incremental, and partial generation.
+- Adds pipeline execution for multi-document sets, multi-format rendering, determinism, provenance, and workflow/codegen correlation.
+- Specifies living documentation synchronization, drift types, manual-authoritative sections, and docs-to-source proposal safety.
+- Defines document lifecycle states including `published`, `stale`, `deprecated`, and archival rules.
+- Standardizes review, publish receipts, quality validators, and append-only audit history.
+- Adds security controls for secrets, audience isolation, policy packs, and least-privilege generation.
+- Defines L1–L3 conformance levels and test vector families.
+
+#### Normative Requirements
+
+- Introduces `DOC-REQ-001` through `DOC-REQ-169` for architecture, sources, modes, execution, drift, lifecycle, review/publish, security, implementation, and conformance.
+
+#### Assets
+
+- `specification/AESP-0008.md` — Chapters 1-4
+- `specification/AESP-0008-continued.md` — Chapters 5-8
+- `specification/AESP-0008-reference.md` — Chapters 9-12 and references
+- `specification/aesp-0008.yaml` — AESP-0008 metadata file
 
 ## [0.9.0] — 2026-07-10
 
