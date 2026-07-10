@@ -601,4 +601,96 @@ CNP satisfies REQ-069 (agent-to-agent direct messaging) because any agent may an
 
 The fan-out pattern distributes one event to $N$ subscribers simultaneously, reducing end-to-end latency compared to sequential execution [^6^]. When combined with a subsequent fan-in phase, it implements the map-reduce pattern: distribute subtasks to $N$ workers, then collect and reduce their outputs. REQ-102 explicitly requires fan-out support for distributed processing.
 
-Bounded concurrency is achieved through the bulkhead pattern: each worker pool has a fixed capacity, and excess tasks are queued or rejected rather than consuming unbounded resources. AESP-0003 RECOMMENDS that fan-out implementations specify a `maxConcurrency` parameter defaulting to the worker pool size, with overflow tasks placed on a durable queue. Production AI agent pipeline architecture
+Bounded concurrency is achieved through the bulkhead pattern: each worker pool has a fixed capacity, and excess tasks are queued or rejected rather than consuming unbounded resources. AESP-0003 RECOMMENDS that fan-out implementations specify a `maxConcurrency` parameter defaulting to the worker pool size, with overflow tasks placed on a durable queue. Production AI agent pipeline architectures include seven proven patterns — Sequential, Parallel, Conditional, Fan-out/Fan-in, DAG, Iterative, and Event-driven — with cost estimates ranging from $0.05 to $0.30 per pipeline run [^2^]. Directed Acyclic Graph (DAG) variants optimize latency by 30-40% for complex pipelines with six or more agents where pairs can execute in parallel [^2^].
+
+## 10.3 Coordination Models
+
+Coordination models define how agents agree on what to do and when. The two classical models — orchestration and choreography — occupy opposite ends of a spectrum between central control and emergent behavior [^13^]. REQ-070 and REQ-074 favor orchestration; REQ-072 and REQ-073 favor choreography. AESP-0003 supports both and RECOMMENDS hybrid composition as the production norm [^17^].
+
+### 10.3.1 Orchestration
+
+Orchestration employs a central coordinator — often called an orchestrator or conductor — that explicitly controls the flow of work through the system [^13^]. The orchestrator knows every step, decides what happens next, handles retries and compensation, and maintains saga state [^15^]. Microsoft's Azure Architecture Center recommends orchestration for complex workflows and when adding new services that should avoid cyclic dependencies [^16^].
+
+Orchestration provides three advantages. First, workflow logic is explicit and centralized, making debugging and auditing straightforward. Second, error handling is simpler because a single component owns recovery decisions. Third, complex conditional logic — branching, retries, and compensations — is handled naturally by the orchestrator [^13^]. The disadvantage is the SPOF: if the orchestrator fails, workflow state may be lost unless the orchestrator itself uses durable execution (Chapter 7).
+
+### 10.3.2 Choreography
+
+Choreography takes a decentralized approach where agents coordinate through agreed-upon protocols without central control [^13^]. Each agent listens to events, reacts independently, and emits new events. The workflow emerges from the collective behavior of the agents — "think of it as a dance, not a conductor" [^15^]. Choreography eliminates single points of failure and bottlenecks since agents interact directly without routing through a coordinator [^14^]. If one agent is briefly down, it misses events that could be replayed from retention, but the overall system does not collapse [^14^].
+
+The primary disadvantage is that workflow logic becomes implicit and scattered across agents [^14^]. Debugging requires tracing interactions across the entire ensemble. Microsoft's Azure Architecture Center notes that choreography risks cyclic dependencies and is better suited for simple workflows with few services [^16^]. The author of a detailed comparison of saga patterns draws direct parallels between multi-agent choreography and the Saga Choreography pattern from microservices architecture, Event-Driven Architecture (EDA), and Domain-Driven Design (DDD) principles, emphasizing that choreography's decentralized event flow mirrors the emergent coordination observed in biological systems [^14^].
+
+### 10.3.3 Hybrid as Production Norm
+
+Many real-world systems combine orchestration and choreography, using orchestration for critical transactional workflows while allowing agents to choreograph internal interactions [^17^]. This hybrid approach manages the complex internal logic of specific domains through orchestration while handling communication between broader business domains through choreography [^17^].
+
+AESP-0003 RECOMMENDS this hybrid model: orchestration governs critical multi-step transactions (satisfying REQ-070 and REQ-071) while choreography handles high-volume independent operations (satisfying REQ-072 and REQ-073). The event backbone from Chapter 4 provides the shared infrastructure: orchestrators publish commands as events, and choreographed agents react to those events autonomously.
+
+### 10.3.4 Coordination Model Decision Matrix
+
+**Table 10.2: Coordination Pattern Decision Matrix**
+
+| Decision Factor | Orchestration | Choreography | Hybrid |
+|---|---|---|---|
+| Workflow complexity | High (nested conditionals) [^16^] | Low (linear event chains) [^16^] | Medium-to-high |
+| Agent count | Small (2-10 agents) | Large (10+ agents) | Partitioned domains |
+| Fault tolerance requirement | Requires durable orchestrator [^13^] | Inherent (no SPOF) [^14^] | Orchestrator domain protected |
+| Debuggability | High (central log) [^13^] | Low (distributed traces) [^14^] | Medium |
+| Change velocity | Low (orchestrator change) | High (local agent change) | Medium |
+| Transaction criticality | High (financial, safety) | Low (notifications) | Mixed |
+| Latency sensitivity | Higher (central hop) | Lower (direct) | Depends on path |
+| Production prevalence | 35-40% of systems | 20-25% of systems | 40-45% of systems [^17^] |
+
+The prevalence data in the final row reflects practitioner reporting from the n8n industry survey (2026), which found that hybrid approaches are the most common pattern in mature production deployments [^17^]. The analysis of Table 10.2 reveals that pure orchestration dominates in regulated industries (finance, healthcare) where auditability is paramount, while pure choreography dominates in creative and exploratory domains (research, design) where agent autonomy drives value. Hybrid systems are characteristic of enterprise deployments spanning multiple domains.
+
+## 10.4 Shared Context Patterns
+
+Agents collaborating on complex tasks must share intermediate results, observations, and hypotheses. REQ-073 requires blackboard/shared context support, and REQ-075 requires conversation thread management. This section specifies three patterns for shared state.
+
+### 10.4.1 Blackboard Pattern
+
+The blackboard pattern was invented for the Hearsay-II speech understanding system at Carnegie Mellon University in the 1970s, where independent knowledge sources communicated through a global shared database called the blackboard [^22^]. The pattern has exactly three components: the blackboard (shared structured memory), knowledge sources (the agents), and a controller loop that selects a ready source and runs it [^23^]. Agents never talk to each other — a knowledge source's entire world is the blackboard, making agents independently writable, testable, and removable [^23^].
+
+Modern implementations use message brokers as the blackboard substrate. The GEACL proposal implements the blackboard via gossip-enhanced shared knowledge repositories, with embedding-based contextual guidance and direct agent-to-agent communication mediated through the shared state [^24^]. Kafka streaming topics provide durable blackboard storage with complete audit trails, while NATS JetStream enables lightweight implementations with ~20 MB footprint [^15^].
+
+The blackboard pattern is illustrated in Figure 10.2.
+
+```mermaid
+sequenceDiagram
+    participant KS1 as Knowledge Source A
+    participant KS2 as Knowledge Source B
+    participant KS3 as Knowledge Source C
+    participant BB as Blackboard
+    participant CTL as Controller
+
+    KS1->>BB: write(hypothesis_H1, confidence=0.7)
+    BB-->>CTL: state_changed
+    CTL->>CTL: select_next(KS2)
+    CTL->>KS2: run(read_blackboard)
+    KS2->>BB: read(hypothesis_H1)
+    BB-->>KS2: H1 (confidence=0.7)
+    KS2->>BB: write(hypothesis_H2, confidence=0.85, ref=H1)
+    BB-->>CTL: state_changed
+    CTL->>CTL: select_next(KS3)
+    CTL->>KS3: run(read_blackboard)
+    KS3->>BB: read(H1, H2)
+    BB-->>KS3: {H1: 0.7, H2: 0.85}
+    KS3->>BB: write(solution_S1, confidence=0.92, refs=[H1,H2])
+    CTL->>BB: read(final_solution)
+    BB-->>CTL: S1 (confidence=0.92)
+```
+
+**Figure 10.2**: Blackboard pattern with three knowledge sources. The controller selects which source runs next based on blackboard state; sources never communicate directly. The final solution emerges from opportunistic contributions.
+
+REQ-073 is satisfied when the blackboard is implemented as a persistent event log: each write is an append-only event, each read is a subscription to a topic or stream, and the controller is either an external scheduler or an emergent consensus among competing knowledge sources.
+
+### 10.4.2 Event Sourcing
+
+Event sourcing stores state changes as a sequence of events in an append-only log rather than overwriting current state, enabling complete audit trails, multiple query models from one truth, temporal queries, and decoupled evolution of command and query sides [^25^]. For multi-agent systems, event sourcing provides the immutable record needed for governance, debugging, and compliance.
+
+The ESAA (Event Sourcing for Autonomous Agents) architecture demonstrates practical application. In ESAA, agents emit only structured intentions in validated JSON; a deterministic orchestrator validates, persists events in an append-only log (`activity.jsonl`), applies effects, and projects a verifiable materialized view (`roadmap.json`) [^27^].
+
+**Case Study: ESAA Clinical Dashboard.** The multi-agent case study in ESAA constructed a clinical dashboard with 50 tasks, 86 events, 4 concurrent agents across 8 phases using heterogeneous LLMs (Claude Sonnet, Codex GPT-5, Antigravity/Gemini 3 Pro, and Claude Opus) [^27^]. Each agent emitted structured intentions that the orchestrator validated before appending to the event log. The 86-event trace enables complete reconstruction of the system's state at any point, forensic identification of which agent contributed which hypothesis, and temporal queries such as "show all diagnoses proposed between 14:00 and 15:00." Event sourcing satisfied REQ-071 (task lifecycle state machine) by treating each state transition as an immutable event, and REQ-075 (conversation thread management) by maintaining causal ordering across agent contributions.
+
+### 10.4.3 Conversation Thread Management
+
+REQ-075 mandates conversation thread management for multi-turn interactions. In multi-agent systems, threads branch: a supervisor initiates a thread, workers create sub-threads for su
