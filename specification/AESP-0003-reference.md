@@ -819,4 +819,73 @@ Data sovereignty is the requirement that certain data must not leave a geographi
 
 ### 10.6.3 Agent-to-Human Primitives
 
-Human-in-the-loop interaction is required for safety-critical decisions and quality gates. AESP-0003 defines three ag
+Human-in-the-loop interaction is required for safety-critical decisions and quality gates. AESP-0003 defines three agent-to-human primitives: notification (agent sends a message to a human via the human's preferred channel), approval request (agent pauses in `input-required` state and waits for explicit human approval or rejection), and escalation (agent forwards a decision to a human with higher authority when confidence is insufficient or risk is too high).
+
+**Case Study: CNP Task Allocation in Cross-Organizational Settings.** Consider a logistics network with three independent carriers (separate AEOs), each operating a fleet of route-optimization agents. When a large shipment requires multi-carrier coordination, the originating carrier's dispatch agent announces a task via CNP across the federated network. Each carrier's agents evaluate the announcement against their current load and capabilities, submitting bids that include cost estimates, time-to-completion, and any cross-border handling restrictions. The dispatch agent awards the contract to the optimal bidder using a weighted scoring function.
+
+In this scenario, REQ-076 is satisfied by trust federation: each carrier authenticates bids using IBCTs signed by the carrier's AEO root key. Data sovereignty is maintained because route data (classified `confidential`) never leaves the carrier's infrastructure; only capability advertisements and bid summaries (classified `internal`) traverse the inter-AEO channel. The CNP manager agent runs in the originating carrier's AEO but validates bids using attestations from the other AEOs' identity registries. Leader election within each carrier's agent pool prevents the 53-86% token duplication that would occur if every agent independently proposed routes [^25^].
+
+The cross-organizational CNP flow illustrates how AESP-0003 patterns compose: CNP for dynamic allocation (Section 10.2.3), BFT consensus for agreement on the winning bid (Section 10.5.1), IBCTs for cross-domain authentication (Section 10.6.1), and event sourcing for the immutable audit trail of every announcement, bid, and award (Section 10.4.2). This compositional approach — rather than a single monolithic protocol — is the central architectural principle that enables multi-agent systems to scale across organizational boundaries while maintaining security, compliance, and operational observability.
+
+---
+
+## 11. Protocol Interoperability Bindings
+
+Production AEOs deploy heterogeneous agents built on different frameworks, each speaking a different dialect of the emerging agent communication ecosystem. This chapter defines the normative bindings between AESP-0003 and the four dominant existing protocols — MCP (Model Context Protocol), A2A (Agent-to-Agent Protocol), ACP (Agent Communication Protocol), and ANP (Agent Network Protocol) — specifying how envelope fields translate, how method names map, how task states correspond, and how identity systems bridge. These bindings satisfy REQ-077 through REQ-089.
+
+The design principle is **semantic preservation, not structural identity**: an agent speaking AESP-0003 MUST interact with an MCP tool server or an A2A task endpoint without loss of meaning, idempotency, or traceability.
+
+### 11.1 MCP Binding
+
+The Model Context Protocol (MCP), maintained by Anthropic, is the dominant protocol for stateless tool access. MCP servers expose tools, resources, and prompt templates that LLM clients discover and invoke. As of July 2026, MCP transitioned to a stateless-first architecture (SEP-2575) [^29^], eliminating the initialize handshake and session affinity requirements. This alignment makes MCP and AESP-0003 natural partners: MCP provides the tool-access vertical, while AESP-0003 provides the multi-agent coordination horizontal.
+
+#### 11.1.1 JSON-RPC 2.0 Compatibility
+
+MCP uses JSON-RPC 2.0 as its exclusive message format [^7^]. AESP-0003's envelope is structurally compatible because both protocols share the same parent specification: JSON-RPC 2.0 request/response pairs with explicit ID correlation. The translation between AESP-0003 envelopes and MCP JSON-RPC messages is a deterministic field mapping.
+
+An AESP-0003 message envelope carries routing metadata (`sender`, `recipient`, `traceContext`) that MCP JSON-RPC messages do not. The MCP binding preserves this metadata by embedding it in the JSON-RPC `params` object under the namespace key `_aesp`, which MCP servers are required to ignore per the "unknown fields MUST be ignored" rule [^7^]. This forward-compatible embedding ensures that AESP-0003 routing and tracing information survives traversal through MCP infrastructure without requiring MCP server modifications.
+
+#### 11.1.2 Streamable HTTP Transport Binding
+
+MCP's Streamable HTTP transport (introduced 2025-03-26, stabilized July 2026) uses a single HTTP endpoint accepting POST for RPC and GET with SSE upgrade for streaming [^3^]. AESP-0003's HTTP transport binding (Section 4.1) is directly compatible: an AESP-0003 agent POSTs to the MCP server's `/rpc` endpoint with `Content-Type: application/json`, carrying a JSON-RPC 2.0 payload that the MCP server unwraps and processes.
+
+Under SEP-2575, the `Mcp-Session-Id` header is removed in stateless mode [^30^], eliminating sticky routing. In legacy stateful mode, this header maps to AESP-0003's `sessionId` field. Implementations MUST default to stateless mode and MAY support stateful mode for pre-2026-07 MCP servers.
+
+#### 11.1.3 Stateless-First Alignment (SEP-2575)
+
+SEP-2575 ("Make MCP Stateless") was motivated by three specific production problems: impediment to horizontal scaling (sticky sessions required for load balancing), poor resilience (session state lost on server failure), and increased implementation complexity (session management bugs and memory leaks) [^30^]. The stateless transition eliminates the three-phase initialize handshake and makes every request self-contained.
+
+AESP-0003's envelope design is inherently stateless: every MVE-Required envelope carries `messageId`, `correlationId`, `sender`, `recipient`, `timestamp`, and `traceContext`, making each message self-describing and independently routable. This structural alignment means that AESP-0003-to-MCP translation requires no session state on the translation gateway. A stateless gateway can process any request independently, enabling horizontal scaling of the binding layer itself.
+
+#### 11.1.4 Message Type Mapping Table
+
+Table 11.1 defines the complete mapping between AESP-0003 message types and MCP JSON-RPC methods.
+
+| AESP-0003 Message Type | MCP JSON-RPC Method | Direction | Semantic Equivalence |
+|---|---|---|---|
+| `tools/discover` | `tools/list` | C→S | Discover available tools with input schemas [^7^] |
+| `tools/invoke` | `tools/call` | C→S | Execute a tool with arguments, receive result [^7^] |
+| `resources/list` | `resources/list` | C→S | Enumerate available resources [^540^] |
+| `resources/read` | `resources/read` | C→S | Retrieve resource content by URI [^540^] |
+| `resources/subscribe` | `resources/subscribe` | C→S | Request change notifications for a resource [^526^] |
+| `resources/unsubscribe` | `resources/unsubscribe` | C→S | Cancel resource subscription [^526^] |
+| `prompts/list` | `prompts/list` | C→S | Discover available prompt templates [^540^] |
+| `prompts/get` | `prompts/get` | C→S | Retrieve a prompt template with arguments [^540^] |
+| `capabilities/negotiate` | `initialize` | C→S | Exchange protocol version and capability flags [^540^] |
+| `sampling/createMessage` | `sampling/createMessage` | S→C | Server requests LLM sampling from client [^540^] |
+| `notifications/progress` | `notifications/progress` | S→C | Progress update during long tool execution [^7^] |
+| `notifications/listChanged` | `notifications/tools/listChanged` | S→C | Tool/resource/prompt set changed [^528^] |
+
+The mapping is near-isomorphic for the core tool and resource operations because both protocols model these as request-response interactions over JSON-RPC 2.0. The `capabilities/negotiate` row requires special handling: in stateless mode (SEP-2575), the `initialize` handshake is replaced by inline capability advertisement in the `tools/list` response, which the AESP-0003 agent treats as an implicit capability negotiation result. When speaking to a legacy stateful MCP server, the binding gateway MUST perform the full three-phase initialize handshake on behalf of the AESP-0003 agent and cache the capability object for subsequent tool invocations.
+
+### 11.2 A2A Binding
+
+The Agent-to-Agent Protocol (A2A), developed by Google with 150+ organizational supporters, is the dominant protocol for enterprise task routing. A2A defines a stateful task lifecycle with nine named states, Agent Cards for capability discovery, and a three-layer architecture (Data Model / Operations / Transport Bindings) that enables transport independence [^12^][^581^]. AESP-0003 and A2A are the closest semantic matches among all four protocols, sharing the same three-layer design philosophy and JSON-RPC 2.0 foundation.
+
+#### 11.2.1 Agent Card Bidirectional Translation
+
+A2A's Agent Card is a JSON metadata document discovered at `/.well-known/agent-card.json` per RFC 8615 [^355^]. It contains the agent's identity, capabilities, skills, supported interfaces, and security schemes. AESP-0003's Agent Description document (Section 6.1) is functionally equivalent and supports bidirectional translation.
+
+The translation is deterministic. An A2A Agent Card's `name`, `description`, `url`, and `version` fields map directly to AESP-0003 Agent Description fields. The A2A `skills` array maps one-to-one to AESP-0003's `skills` array. The A2A `capabilities` object maps to AESP-0003's `capabilities` object; unrecognized flags are preserved under the `extensions` namespace.
+
+The A2A `supportedInterfaces` array declares protocol bindings in preference order [^355^], mapping to AESP-0003's `supportedTransports` with a simple name translation: `"jsonRpc"` → `"JSONRPC"`, `"grpc"` → `"GRPC"`, `"httpRest"` → `"HTTP_REST"`. Security schemes follow the Op
