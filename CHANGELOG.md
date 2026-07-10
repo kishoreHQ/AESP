@@ -9,7 +9,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Planned
-- AESP-0007 through AESP-0015
+- AESP-0008 through AESP-0015
+
+## [0.9.0] — 2026-07-10
+
+### Added — AESP-0007: Code Generation
+
+This release adds the code generation specification for autonomous engineering
+organizations, defining generation request and response contracts, template and
+model-driven modes, determinism and provenance, multi-file generation, output
+validation, artifact lifecycle management, review workflows, security and policy
+controls, and conformance requirements.
+
+#### Specification Content (AESP-0007)
+
+- Defines generation model architecture with request/session surfaces, engine capabilities, artifact identity, session state machine, and structured error model.
+- Specifies input contracts for prompts, schemas, templates, variables, constraints, context packs, and generation configuration including determinism modes.
+- Defines generation modes: template-driven, model-driven, hybrid, incremental, regeneration, patch, and partial generation.
+- Adds execution semantics for multi-file and multi-language sessions, streaming, cancellation, determinism, provenance, result delivery, and workflow correlation.
+- Specifies validation pipelines covering syntax, formatting, types, policy, security, dependency integrity, tests, and linting.
+- Defines artifact lifecycle states (`draft`, `generated`, `reviewed`, `approved`, `superseded`, `archived`) with transitions, versioning, and retention rules.
+- Standardizes human and automated review, approval, rejection, revision, escalation, and append-only audit history.
+- Adds security and policy controls for authorization, secrets, supply chain, policy packs, and execution isolation.
+- Defines L1–L3 conformance levels, interoperability expectations, quality metrics, and test vector families.
+
+#### Normative Requirements
+
+- Introduces `CG-REQ-001` through `CG-REQ-192` for architecture, inputs, modes, execution, validation, lifecycle, review, security, implementation, and conformance.
+
+#### Assets
+
+- `specification/AESP-0007.md` — Chapters 1-4
+- `specification/AESP-0007-continued.md` — Chapters 5-8
+- `specification/AESP-0007-reference.md` — Chapters 9-12 and references
+- `specification/aesp-0007.yaml` — AESP-0007 metadata file
 
 ## [0.8.0] — 2026-07-10
 

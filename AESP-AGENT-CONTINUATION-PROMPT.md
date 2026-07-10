@@ -533,7 +533,7 @@ After AESP-0004 is committed, repeat the same pipeline for subsequent specificat
 |------|-------|-----------------|------------|
 | AESP-0005 | Workflow Orchestration | AESP-0001, 0002, 0003, 0004 | ~45,000 |
 | AESP-0006 | Knowledge Graph | AESP-0001, 0004 | ~40,000 |
-| AESP-0007 | Error Handling & Resilience | AESP-0001, 0003 | ~35,000 |
+| AESP-0007 | Code Generation | AESP-0001, 0003, 0005 | ~40,000 |
 | AESP-0008 | Observability & Telemetry | AESP-0001, 0003 | ~35,000 |
 | AESP-0009 | Deployment & Scaling | AESP-0001, 0003 | ~40,000 |
 | AESP-0010 | Security Framework | AESP-0000, 0001, 0003 | ~45,000 |

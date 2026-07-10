@@ -9,7 +9,7 @@ pending community review and committee decisions.
 | Phase | Name | Specs | Target | Status |
 |-------|------|-------|--------|--------|
 | Phase 1 | Foundation | AESP-0000 — AESP-0005 | Q3 2026 | IN PROGRESS |
-| Phase 2 | Infrastructure | AESP-0006 — AESP-0010 | Q4 2026 | PLANNED |
+| Phase 2 | Infrastructure | AESP-0006 — AESP-0010 | Q4 2026 | IN PROGRESS |
 | Phase 3 | Operations | AESP-0011 — AESP-0015 | Q1 2027 | PLANNED |
 | Phase 4 | Ecosystem | Reference implementation, examples, tooling | Q2 2027 | PLANNED |
 | Phase 5 | Standardization | Community review, RFC process, stable release | Q3 2027 | PLANNED |
@@ -62,6 +62,11 @@ generation, documentation, deployment, and testing.
 
 ### Phase 2 Exit Criteria
 
+- [x] AESP-0006 Knowledge Graph published (DRAFT)
+- [x] AESP-0007 Code Generation published (DRAFT)
+- [ ] AESP-0008 Documentation Generator published
+- [ ] AESP-0009 Deployment Automation published
+- [ ] AESP-0010 Testing & Validation published
 - [ ] All five specifications reach DRAFT status with complete normative content
 - [ ] Integration points with Phase 1 specifications fully defined
 - [ ] Reference implementations started for at least three specifications
@@ -179,7 +184,7 @@ gantt
 
 ---
 
-*Last updated: 2026-07-09*
+*Last updated: 2026-07-10*
 
 For the current status of individual specifications, see
 [specification/README.md](specification/README.md).

@@ -3,7 +3,7 @@
 **Date**: 2026-07-10
 **Repository**: https://github.com/kishoreHQ/AESP
 **Branch**: main
-**Current Status**: AESP-0000 through AESP-0003 completed. Ready for AESP-0004.
+**Current Status**: AESP-0000 through AESP-0007 drafted. Ready to begin AESP-0008.
 
 ---
 
@@ -21,10 +21,12 @@ AESP (Autonomous Engineering Specification Protocol) is a vendor-neutral open st
 | AESP-0003 | Communication Protocols | Committed | AESP-0003.md, AESP-0003-continued.md, AESP-0003-reference.md, aesp-0003.yaml | ~49,000 |
 
 ### Specification Pipeline Status
-- **AESP-0004**: Memory Systems — NOT STARTED (next in queue)
-- **AESP-0005**: Workflow Orchestration — PENDING
-- **AESP-0006**: Knowledge Graph — PENDING
-- **AESP-0007 through AESP-0015** — PENDING
+- **AESP-0004**: Memory Systems — DRAFTED
+- **AESP-0005**: Workflow Orchestration — DRAFTED
+- **AESP-0006**: Knowledge Graph — DRAFTED
+- **AESP-0007**: Code Generation — DRAFTED
+- **AESP-0008**: Documentation Generator — NEXT IN QUEUE
+- **AESP-0009 through AESP-0015** — PENDING
 
 ---
 
