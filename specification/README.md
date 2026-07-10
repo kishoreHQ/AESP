@@ -37,7 +37,7 @@ engineering domain.
 | [AESP-0007](AESP-0007.md) | Code Generation | DRAFT | Code generation request and response contracts, template and model-driven modes, determinism and provenance, multi-file generation, output validation, artifact lifecycle, review workflows, and conformance requirements. |
 | [AESP-0008](AESP-0008.md) | Documentation Generator | DRAFT | Documentation request contracts, schema-to-docs and living documentation pipelines, source pinning and drift detection, multi-format publishing, quality validation, document lifecycle, and conformance requirements. |
 | [AESP-0009](AESP-0009.md) | Deployment Automation | DRAFT | Deployment request contracts, environment and target models, rollout strategies, progressive delivery and health gates, rollback, environment promotion, freeze windows, provenance, and conformance requirements. |
-| [AESP-0010](AESP-0010.md) | Testing & Validation | DRAFT | Testing frameworks, validation protocols, test generation, and coverage requirements. Defines comprehensive testing at unit, integration, system, and acceptance levels. |
+| [AESP-0010](AESP-0010.md) | Testing & Validation | DRAFT | Test request and evidence contracts, test taxonomy, generation and selection, execution semantics, oracles and coverage, quality gates, flake handling, environments and data controls, and conformance requirements. |
 
 ### Phase 3: Operations (Q1 2027)
 
@@ -100,10 +100,12 @@ graph TD
     A0007 --> A0009
     A0008 --> A0009
 
+    A0005 --> A0010
     A0006 --> A0010
     A0007 --> A0010
     A0008 --> A0010
     A0009 --> A0010
+    A0010 --> A0009
     A0009 --> A0012
 
     A0011 --> A0012

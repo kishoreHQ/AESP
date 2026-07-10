@@ -9,7 +9,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Planned
-- AESP-0010 through AESP-0015
+- AESP-0011 through AESP-0015
+
+## [1.2.0] — 2026-07-10
+
+### Added — AESP-0010: Testing & Validation
+
+This release adds the testing and validation specification for autonomous
+engineering organizations, defining test request and evidence contracts, test
+taxonomy, generation and selection, execution semantics, oracles and coverage,
+quality gates, flake handling, environments and data controls, policy, and
+conformance requirements.
+
+#### Specification Content (AESP-0010)
+
+- Defines testing model architecture with request/session surfaces, catalog identity, runner isolation, and structured errors.
+- Specifies baseline test taxonomy (unit through chaos/smoke) with outcome classes and criticality.
+- Defines test generation/authoring modes, impact selection, quarantine hygiene, and linkage to AESP-0007.
+- Adds execution semantics for parallelism, sharding, retries, flake classification, determinism, and budgets.
+- Specifies oracles, coverage signals, versioned quality gates, and requirements traceability.
+- Defines environment fingerprints, fixtures, synthetic data, doubles vs real dependencies, and secret redaction.
+- Standardizes immutable results, evidence packages for deploy consumption, catalog lifecycle, and retention.
+- Adds security controls for untrusted tests, evidence integrity, and gate break-glass audit.
+- Defines L1–L3 conformance levels and AESP-0009 interoperability expectations.
+
+#### Normative Requirements
+
+- Introduces `TEST-REQ-001` through `TEST-REQ-137` for architecture, taxonomy, generation, execution, gates, environments, results, security, implementation, and conformance.
+
+#### Assets
+
+- `specification/AESP-0010.md` — Chapters 1-4
+- `specification/AESP-0010-continued.md` — Chapters 5-8
+- `specification/AESP-0010-reference.md` — Chapters 9-12 and references
+- `specification/aesp-0010.yaml` — AESP-0010 metadata file
 
 ## [1.1.0] — 2026-07-10
 
