@@ -238,3 +238,129 @@ A critical anti-pattern must be avoided: treating transcripts as the coordinatio
 | ReSum [^25^] | ~10:1 | ~70% | Periodic tool invocation | Agent-controlled maintenance |
 | AgentFold [^25^] | ~9:1 | ~68% | Inline with generation | Online state maintenance |
 | H-MEM [^26^] | Variable | ~75% | Index lookup overhead | Very long multi-domain sessions |
+
+**Table 9.3** — Context compression: ratios, retention rates, and latency characteristics. FullContext achieves the best compression-to-retention tradeoff at 12.3:1 with 77% recollection accuracy.
+
+FullContext achieved the best tradeoff in evaluation across real ChatGPT conversations, delivering 92% space saving [^24^]. The trimming vs. summarization tradeoff is well-documented: trimming is deterministic with zero latency but causes abrupt amnesia where the agent forgets established facts; summarization retains long-range memory but adds latency and risks "summary drift" where compressed context deviates from original meaning [^8^]. Production systems SHOULD implement both: summarization for long-range preservation and sliding windows for recent turns to avoid drift on the most recent interactions.
+
+Hierarchical architectures further improve efficiency for very long sessions. H-MEM uses four layers (Domain, Category, Memory Trace, Episode) with vector representations and positional indices, reducing retrieval overhead versus flat systems [^26^]. HiAgent uses planning subgoals as memory chunks, surpassing planning-only methods [^27^]. Mem0 distinguishes memory formation (selective fact retention) from summarization (compressing everything) [^28^]. AESP-0003 recommends this dual approach: summarization for general compression and selective memory formation for critical facts (user preferences, confirmed decisions, security authorizations) that must survive context resets.
+
+#### 9.5.3 Size Limits and Context Reset
+
+Implementations MUST enforce a maximum context size. At 80% capacity, summarization SHOULD trigger. At 95%, a context reset MUST occur—replacing full history with compressed summary and recent raw turns. This reset is transparent to participants; only the internal representation changes. Critical facts MUST be preserved in a separate append-only "facts log" that is never truncated. Implementations SHOULD expose context utilization metrics (current tokens, token limit, compression ratio) through the session status endpoint so operators can monitor capacity.
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://aesp.example.org/schemas/ContextSnapshot.json",
+  "title": "ContextSnapshot",
+  "description": "AESP-0003 session context snapshot for persistence and recovery",
+  "type": "object",
+  "required": ["snapshotId", "sessionId", "timestamp", "version"],
+  "properties": {
+    "snapshotId": { "type": "string", "format": "uuid" },
+    "sessionId": { "type": "string" },
+    "parentSnapshotId": { "type": ["string", "null"], "format": "uuid" },
+    "timestamp": { "type": "string", "format": "date-time" },
+    "version": { "type": "string" },
+    "sessionState": {
+      "type": "object",
+      "required": ["status", "idleTimeoutSeconds", "maxLifetimeSeconds"],
+      "properties": {
+        "status": { "type": "string", "enum": ["created", "active", "idle", "expired"] },
+        "idleTimeoutSeconds": { "type": "integer", "minimum": 1 },
+        "maxLifetimeSeconds": { "type": "integer", "minimum": 1 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "lastActivityAt": { "type": "string", "format": "date-time" },
+        "terminatedAt": { "type": ["string", "null"], "format": "date-time" },
+        "terminationReason": { "type": ["string", "null"],
+          "enum": ["explicit", "timeout", "max_lifetime", "failure", null] }
+      }
+    },
+    "conversationContext": {
+      "type": "object",
+      "required": ["summary", "recentTurns", "factsLog"],
+      "properties": {
+        "summary": { "type": "string" },
+        "summaryMethod": { "type": "string",
+          "enum": ["FullContext", "ReSum", "AgentFold", "truncation", "none"] },
+        "recentTurns": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["turnIndex", "role", "content", "timestamp"],
+            "properties": {
+              "turnIndex": { "type": "integer" },
+              "role": { "type": "string", "enum": ["user", "assistant", "system", "tool"] },
+              "content": { "type": "string" },
+              "timestamp": { "type": "string", "format": "date-time" },
+              "toolCalls": { "type": "array" },
+              "metadata": { "type": "object" }
+            }
+          }
+        },
+        "factsLog": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["factId", "statement", "establishedAt", "source"],
+            "properties": {
+              "factId": { "type": "string", "format": "uuid" },
+              "statement": { "type": "string" },
+              "establishedAt": { "type": "string", "format": "date-time" },
+              "source": { "type": "string" },
+              "confidence": { "type": "number", "minimum": 0, "maximum": 1 }
+            }
+          }
+        },
+        "tokenCount": { "type": "integer" },
+        "tokenLimit": { "type": "integer" }
+      }
+    },
+    "activeTasks": { "type": "array" },
+    "participants": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["participantId", "role"],
+        "properties": {
+          "participantId": { "type": "string" },
+          "role": { "type": "string", "enum": ["delegator", "executor", "observer", "human"] },
+          "capabilities": { "type": "array", "items": { "type": "string" } },
+          "joinedAt": { "type": "string", "format": "date-time" }
+        }
+      }
+    },
+    "traceContext": {
+      "type": "object",
+      "properties": {
+        "traceparent": { "type": "string" },
+        "tracestate": { "type": "string" }
+      }
+    }
+  }
+}
+```
+
+**Schema 9.2** — `ContextSnapshot` JSON Schema. Complete recoverable session state with compressed conversation, facts log, active tasks, and trace context. The `parentSnapshotId` creates a linked chain for audit trail reconstruction.
+
+#### 9.5.4 Context as Scaling Bottleneck
+
+The hub-and-spoke topology degrades at approximately seven peripheral agents, as the coordinator's context window overflows with status updates. Beyond this threshold, critical context is pushed out by newer messages—a phenomenon termed information withholding. This shifts the fundamental bottleneck from message throughput to context management, making compression ratios and hierarchical delegation architecture-critical design decisions rather than optional optimizations.
+
+This bottleneck has three implications for protocol design. First, implementations SHOULD include contextSizeHint fields in messages, allowing senders to indicate approximate token cost so receivers can make informed context management decisions. Second, implementations SHOULD support explicit contextReset operations that trigger summarization and fact extraction on demand. Third, protocol specifications SHOULD assume limited context windows rather than relying on ever-expanding model capacity—hierarchical memory, sliding windows, and summarization are structural requirements, not temporary workarounds.
+
+**Case Study: Context Overflow in Hub-and-Spoke Deployment.** A financial services firm deployed a hub-and-spoke system for trade processing with a central coordinator managing six specialist agents: order validation, risk assessment, compliance check, settlement preparation, notification, and audit logging. When a seventh agent (market data feed monitoring) was added, the coordinator's context overflowed during peak trading hours. Status updates from seven agents consumed approximately 3,500 tokens per round, leaving insufficient capacity for the coordinator's reasoning and decision-making. The system responded by implementing a hierarchical architecture: the six original specialists were organized into two groups of three (pre-trade and post-trade), each with its own sub-coordinator. The main coordinator managed only the two sub-coordinators and the market data agent, reducing per-round context consumption to approximately 1,800 tokens. Dialog state tracking across the reorganized topology required careful correlation identifier management to ensure sub-coordinator responses aggregated correctly at the top level. This pattern—hierarchical delegation to limit context fan-in—is the recommended approach for systems exceeding the ~7-agent hub capacity threshold.
+
+### 9.6 The Input-Required Primitive
+
+Traditional RPC assumes all execution data arrives in the initial request. Agent workflows violate this: agents need mid-execution approval, clarification, or policy escalation. The input-required primitive defines a formal pause-and-resume mechanism within the task lifecycle.
+
+#### 9.6.1 Pause-and-Resume Semantics
+
+When an agent requires external input, it transitions the task to `input-required` state. This is an explicit protocol event, not an implicit timeout or error. The event payload MUST include: the specific input requested (question, approval request, clarification); a timeout after which the task is abandoned; available response channels; and authorized participant identities.
+
+While paused, the task makes no forward progress. The agent MAY release ephemeral resources but MUST preserve execution context sufficient to resume exactly where paused: conversation history, partial tool results, variable state, and execution plan position.
+
+```mermaid
+sequenceDia
