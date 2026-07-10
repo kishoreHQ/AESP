@@ -12,6 +12,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Phase 4 ecosystem (reference implementations, conformance suites)
 - Community review toward STABLE
 
+## [1.7.1] — 2026-07-10
+
+### Added — Suite Hardening
+
+- `specification/ARCHITECTURE.md` — Agent OS layer map, correlation keys, Hermes levels (also in 1.7.0 commit set).
+- `specification/CONFORMANCE.md` — suite profiles (`core-runtime`, `hermes-agent-os`, `mission-control`, `build-ship`).
+- Expanded remediation, security, and HITL requirements from cross-spec review (REM/SEC/HITL extensions).
+
 ## [1.7.0] — 2026-07-10
 
 ### Added — AESP-0015: Integration & Interoperability

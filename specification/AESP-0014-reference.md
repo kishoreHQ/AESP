@@ -32,13 +32,15 @@ Anti-patterns: approvals in unstructured chat without task id; infinite waits; a
 `HITL-REQ-044`: L3 adds dual control, Mission Control, intervene.  
 `HITL-REQ-045`: Tests MUST include double-claim prevention and timeout non-approval.
 
+`HITL-REQ-050`: Tests MUST include self-approval denial when forbidden and stale-digest conflict on complete.
+
 ## 12. Appendices
 
 ### Task Types
 `approve`, `review`, `input`, `intervene`, `acknowledge`.
 
 ### Requirement Index
-`HITL-REQ-001`–`HITL-REQ-045`.
+`HITL-REQ-001`–`HITL-REQ-050`.
 
 # References
 

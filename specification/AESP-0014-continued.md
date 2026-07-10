@@ -45,3 +45,15 @@
 `HITL-REQ-034`: Stale context: if subject digest changes after task creation, completion MUST revalidate or fail with conflict.
 
 `HITL-REQ-035`: Human feedback artifacts MAY be written to AESP-0004 memory with provenance linking the task id.
+
+## 5.5 Decision Payload Schema
+
+`HITL-REQ-046`: Completed approval decisions MUST include decision enum, optional comment, timestamp, and subject digest acknowledged.
+
+`HITL-REQ-047`: Review decisions that request revision MUST include machine-readable issue codes when available (for example `security`, `correctness`, `style`, `incomplete`).
+
+## 7.1 Operator Presence
+
+`HITL-REQ-048`: Mission Control MAY expose operator presence/availability; routing SHOULD prefer available on-call principals when schedules exist.
+
+`HITL-REQ-049`: Unavailable principals MUST be skipped in escalation with audit of skip reason.

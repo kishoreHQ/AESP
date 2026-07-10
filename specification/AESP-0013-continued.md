@@ -51,3 +51,11 @@
 `SEC-REQ-039`: Compliance evidence packages MUST include policy versions, audit extracts, and access reviews when claimed.
 
 `SEC-REQ-040`: Data subject rights workflows (access/delete) MUST be supported when personal data is processed, coordinated with AESP-0004 forgetting semantics.
+
+## 5.1 Prompt and Tool Output Controls
+
+`SEC-REQ-052`: Production agents with tool access MUST enforce an allowlist or policy decision per tool invocation.
+
+`SEC-REQ-053`: High-risk tools (shell, production deploy, secret read, payment) MUST require step-up auth or HITL when policy classifies them as elevated.
+
+`SEC-REQ-054`: Model outputs that include credential-shaped strings SHOULD be blocked or redacted before tool execution or external send.

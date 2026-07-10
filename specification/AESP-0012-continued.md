@@ -51,3 +51,21 @@
 `REM-REQ-037`: Failed playbooks MUST be marked for review; auto-disable of failing playbooks MAY occur under policy.
 
 `REM-REQ-038`: Knowledge graph entities (AESP-0006) MAY link services, incidents, and change events.
+
+## 5.5 Diagnosis Package
+
+`REM-REQ-049`: Before mutating production, semi-auto and auto sessions SHOULD assemble a diagnosis package including: trigger fingerprint, recent deploy sessions, error-rate delta, top log signatures, and candidate playbooks.
+
+`REM-REQ-050`: Diagnosis packages MUST be attached to the incident for human review when escalated.
+
+## 5.6 Action Catalog Contracts
+
+`REM-REQ-051`: Each action type MUST declare parameters schema, side-effect class, estimated blast radius class (`instance`, `service`, `region`, `global`), and whether it is reversible.
+
+`REM-REQ-052`: Unknown action types MUST be rejected unless a `custom` action is explicitly allowed by policy with review.
+
+## 8.1 Post-Incident Timeline
+
+`REM-REQ-053`: Post-incident records MUST include a timeline of detection, mitigation, verification, and resolution timestamps.
+
+`REM-REQ-054`: Follow-up WorkUnits created from incidents MUST reference the incident id.

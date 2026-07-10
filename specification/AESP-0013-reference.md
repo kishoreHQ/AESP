@@ -38,13 +38,15 @@ Anti-patterns: shared root API keys for all agents; production tools in sandbox 
 
 `SEC-REQ-051`: Tests MUST include privilege escalation attempts, secret leakage in logs, and unauthorized deploy/tool calls.
 
+`SEC-REQ-055`: Tests MUST include step-up denial for elevated tools without approval.
+
 ## 12. Appendices
 
 ### Baseline Audit Event Types
 `authn.success`, `authn.failure`, `authz.deny`, `secret.read`, `policy.change`, `breakglass.activate`, `artifact.admit`, `artifact.deny`.
 
 ### Requirement Index
-`SEC-REQ-001`–`SEC-REQ-051`.
+`SEC-REQ-001`–`SEC-REQ-055`.
 
 # References
 

@@ -36,13 +36,17 @@ Anti-patterns: infinite restart loops; auto-running unreviewed scripts from chat
 
 `REM-REQ-048`: Tests MUST include conflicting concurrent remediations and freeze-window denial.
 
+`REM-REQ-055`: Conformance suites SHOULD simulate alert storms and verify deduplication.
+
+`REM-REQ-056`: Rollback action tests MUST verify AESP-0009 session linkage when deploy rollback is invoked.
+
 ## 12. Appendices
 
 ### Action Types (Baseline)
 `restart`, `scale`, `rollback_deploy`, `feature_flag`, `traffic_shift`, `failover`, `page_human`, `run_diagnostic`, `custom`.
 
 ### Requirement Index
-`REM-REQ-001`–`REM-REQ-048`.
+`REM-REQ-001`–`REM-REQ-056`.
 
 # References
 
