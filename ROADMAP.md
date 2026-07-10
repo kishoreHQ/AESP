@@ -25,15 +25,21 @@ knowledge management.
 | Spec | Title | Objective | Target |
 |------|-------|-----------|--------|
 | AESP-0000 | Specification Governance & Process | Define the governance model, change process, version control, and contribution workflow for all AESP specifications | July 2026 |
-| AESP-0001 | Architecture Overview | Define the canonical reference architecture, component model, data flow, and system boundaries for autonomous engineering platforms | July 2026 |
-| AESP-0002 | Intent & Prompt Engineering | Standardize intent representation, prompt lifecycle management, prompt versioning, and the intent-to-execution pipeline | August 2026 |
-| AESP-0003 | Declarative Infrastructure | Define the declarative state model, schema definitions, resource descriptors, and state reconciliation patterns | August 2026 |
-| AESP-0004 | Scaffolding & Project Templates | Specify project generation patterns, template schemas, initialization workflows, and bootstrap procedures | September 2026 |
-| AESP-0005 | Knowledge Graph & Memory | Define the knowledge graph model, memory lifecycle, context management, and persistent learning patterns | September 2026 |
+| AESP-0001 | Core Model | Define the foundational AEO data model for agents, organizations, roles, work units, capabilities, resources, state, identity, and extensibility | July 2026 |
+| AESP-0002 | Agent Roles | Define role templates, responsibilities, permission boundaries, escalation expectations, and role-based operational patterns | July 2026 |
+| AESP-0003 | Communication Protocols | Define message envelopes, transport bindings, communication patterns, capability discovery, reliability, and multi-agent coordination | July 2026 |
+| AESP-0004 | Memory Systems | Specify memory architectures, operations, storage backends, retrieval mechanisms, distributed consistency, and inter-agent memory sharing | July 2026 |
+| AESP-0005 | Workflow Orchestration | Define workflow graphs, execution semantics, failure handling, scheduling, and cross-agent orchestration patterns | July 2026 |
 
 ### Phase 1 Exit Criteria
 
-- [ ] All six specifications reach DRAFT status with complete normative content
+- [x] AESP-0000 Specification Governance & Process published
+- [x] AESP-0001 Core Model published
+- [x] AESP-0002 Agent Roles published
+- [x] AESP-0003 Communication Protocols published
+- [x] AESP-0004 Memory Systems published
+- [x] AESP-0005 Workflow Orchestration published
+- [x] All six specifications reach DRAFT status with complete normative content
 - [ ] Architecture Decision Records (ADRs) published for all major design choices
 - [ ] At least two independent technical reviews completed per specification
 - [ ] Mermaid diagrams provided for all architectural components

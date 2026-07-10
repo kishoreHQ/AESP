@@ -9,9 +9,107 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Planned
-- AESP-0005: Workflow Orchestration
 - AESP-0006: Knowledge Graph
 - AESP-0007 through AESP-0015
+
+## [0.7.0] — 2026-07-10
+
+### Added — AESP-0005: Workflow Orchestration
+
+This release adds the workflow orchestration specification for autonomous agents,
+defining workflow graph models, task decomposition patterns, execution state
+machines, failure handling and compensation, scheduling and triggers, durable
+state persistence, human-in-the-loop integration, and multi-agent coordination
+models.
+
+#### Specification Content (AESP-0005)
+
+**Chapter 1: Introduction** — Purpose and scope, five fundamental orchestration
+questions, relationship to AESP-0000/0001/0002/0003/0004, normative language,
+five design principles (explicit orchestration, state machines, anticipated
+failure, HITL first-class, hierarchical composition), and core terminology.
+
+**Chapter 2: Workflow Model Architecture** — Workflow graph model with nodes,
+edges, and gateways; JSON `WorkflowDefinition` schema; workflow instance state
+machine (PENDING → SCHEDULED → RUNNING → PAUSED ⇄ RUNNING → COMPLETED with
+FAILED, COMPENSATING, COMPENSATED, CANCELLED branches); task instance state
+machine.
+
+**Chapter 3: Task Decomposition** — Sequential, hierarchical (HTN), parallel,
+and conditional decomposition strategies; decomposition agent roles and quality
+requirements (specific, achievable, ordered, measurable).
+
+**Chapter 4: Execution Semantics** — Workflow engine responsibilities including
+durable execution; task dispatch via AESP-0003 envelopes; data flow between
+tasks; parallel execution with fan-out and join gateways; conditional routing;
+sub-workflow invocation and parent-child hierarchy.
+
+**Chapter 5: Failure Handling** — Error classification (TRANSIENT, SEMANTIC,
+FATAL); retry policies with exponential backoff and jitter; circuit breaker
+pattern (CLOSED/OPEN/HALF_OPEN); saga pattern with compensating transactions;
+timeout handling and escalation.
+
+**Chapter 6: Scheduling and Triggers** — Four execution initiation models
+(explicit, scheduled, event-driven, chained); cron semantics with timezone and
+catch-up policies; webhook-based triggers with signature verification; workflow
+chaining with correlation propagation.
+
+**Chapter 7: State Persistence and Checkpointing** — Durable execution model
+aligned with Temporal event history; event-sourced and snapshot checkpoint
+models; state storage alignment table mapping workflow data to AESP-0004 memory
+types; replay and recovery semantics; state migration strategies.
+
+**Chapter 8: Human-in-the-Loop** — HITL state model (AWAITING_APPROVAL,
+AWAITING_INPUT, AWAITING_REVIEW, ESCALATED, INTERVENED); signal-based
+communication with JSON schema; escalation chains and timeout policies;
+immutable audit requirements; four implementation patterns (pre-approval gate,
+review gate, escalation during execution, manual intervention).
+
+**Chapter 9: Multi-Agent Coordination** — Four coordination models
+(centralized, hierarchical, choreography, hybrid); delegation patterns and
+authority scoping; contract net protocol with bidding; shared workflow state
+with access control; multi-agent failure coordination.
+
+**Chapter 10: Implementation Guidelines** — Four-tier conformance levels
+(Core, Durable, Distributed, Federated); recommended three-tier architecture
+(Definition, Orchestration, Execution); ten anti-patterns to avoid; migration
+strategies across definition versions and engines.
+
+**Chapter 11: Conformance and Testing** — Four conformance tiers; twelve
+required test families; seven evaluation metrics with recommended targets
+(workflow success rate, MTTR, checkpoint recovery time, compensation success
+rate, HITL response time, task dispatch latency, audit completeness).
+
+**Chapter 12: Appendices** — Seventeen workflow error codes; example workflow
+instance lifecycle JSON; requirement index mapping 138 normative requirements
+to their domains; ten references.
+
+#### Normative Requirements
+
+- 138 normative requirements (WF-REQ-001 through WF-REQ-138)
+- 5 design principles and 4 design dimensions
+- 4 conformance tiers
+- 12 chapters across 3 files
+
+#### References
+
+- Temporal Platform Documentation
+- LangGraph Multi-Agent Workflows
+- Camunda BPMN Specification
+- RFC 2119 Normative Language
+- Saga Pattern (Temporal Blog)
+- Temporal Human-in-the-Loop Cookbook
+- HTN Planning (University of Maryland)
+- Multi-Agent Orchestration Patterns
+- Strands Agents Multi-agent Patterns
+- AI Agent Error Handling Patterns
+
+#### Assets
+
+- `specification/AESP-0005.md` — Chapters 1-4, ~26 KB
+- `specification/AESP-0005-continued.md` — Chapters 5-8, ~26 KB
+- `specification/AESP-0005-reference.md` — Chapters 9-12 and references, ~22 KB
+- `specification/aesp-0005.yaml` — AESP-0005 metadata file
 
 ## [0.6.0] — 2026-07-10
 

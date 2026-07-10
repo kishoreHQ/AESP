@@ -115,7 +115,7 @@ AESP/
 | **AESP-0002** | Agent Roles | DRAFT | Foundation |
 | **AESP-0003** | Communication Protocols | DRAFT | Foundation |
 | **AESP-0004** | Memory Systems | DRAFT | Foundation |
-| **AESP-0005** | Workflow Orchestration | PLANNED | Foundation |
+| **AESP-0005** | Workflow Orchestration | DRAFT | Foundation |
 | **AESP-0006** | Continuous Verification | DRAFT | Infrastructure |
 | **AESP-0007** | Code Generation | DRAFT | Infrastructure |
 | **AESP-0008** | Documentation Generator | DRAFT | Infrastructure |

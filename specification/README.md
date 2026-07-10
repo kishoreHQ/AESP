@@ -27,7 +27,7 @@ engineering domain.
 | [AESP-0002](AESP-0002.md) | Agent Roles | DRAFT | Role templates, responsibilities, permission boundaries, escalation expectations, and role-based operational patterns for autonomous engineering agents. |
 | [AESP-0003](AESP-0003.md) | Communication Protocols | DRAFT | Message envelopes, transport bindings, communication patterns, capability discovery, reliability, security, sessions, and multi-agent coordination. |
 | [AESP-0004](AESP-0004.md) | Memory Systems | DRAFT | Memory architectures, operations, storage backends, retrieval mechanisms, distributed consistency, lifecycle controls, and inter-agent memory sharing protocols. |
-| AESP-0005 | Workflow Orchestration | PLANNED | Workflow graphs, execution semantics, failure handling, scheduling, and cross-agent orchestration patterns. |
+| [AESP-0005](AESP-0005.md) | Workflow Orchestration | DRAFT | Workflow graphs, execution semantics, failure handling, scheduling, and cross-agent orchestration patterns. |
 
 ### Phase 2: Infrastructure (Q4 2026)
 

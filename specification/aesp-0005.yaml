@@ -1,0 +1,9 @@
+id: AESP-0005
+title: Workflow Orchestration
+status: draft
+category: protocol
+version: "0.1.0"
+authors: ["AESP Technical Committee"]
+date: "2026-07-10"
+description: "Specifies workflow orchestration semantics, workflow graph models, task decomposition patterns, execution state machines, failure handling and compensation, scheduling, state persistence, human-in-the-loop integration, and multi-agent coordination models for autonomous agents."
+dependencies: ["AESP-0000", "AESP-0001", "AESP-0002", "AESP-0003", "AESP-0004"]
