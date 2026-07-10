@@ -128,7 +128,7 @@ graph TD
     style A0005 fill:#e1f5fe
 ```
 
-For the Agent OS control loop, correlation keys, and Hermes recommended levels, see **[ARCHITECTURE.md](ARCHITECTURE.md)**.
+For the Agent OS control loop, correlation keys, and Hermes recommended levels, see **[ARCHITECTURE.md](ARCHITECTURE.md)**. For suite-level conformance profiles, see **[CONFORMANCE.md](CONFORMANCE.md)**.
 
 ## How to Read the Specifications
 

@@ -102,7 +102,11 @@ Requirement identifiers are stable; extensions append new numbers.
 - Breaking changes to normative requirement meaning require major version discussion under AESP-0000 governance.
 - Adapters (0015) negotiate feature flags; cores fail closed on unmet minimums.
 
-## 8. Implementation Checklist (Publication Quality)
+## 8. Conformance Profiles
+
+Named suite profiles (`aesp.profile.hermes-agent-os`, `mission-control`, `build-ship`, `core-runtime`) are defined in [CONFORMANCE.md](CONFORMANCE.md).
+
+## 9. Implementation Checklist (Publication Quality)
 
 - [ ] All sessions have IRIs and audit trails
 - [ ] Digests pin production artifacts
