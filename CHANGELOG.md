@@ -9,8 +9,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Planned
-- AESP-0006: Knowledge Graph
 - AESP-0007 through AESP-0015
+
+## [0.8.0] — 2026-07-10
+
+### Added — AESP-0006: Knowledge Graph
+
+This release adds the knowledge graph specification for autonomous engineering
+organizations, defining graph semantics, ontology and schema rules, graph
+construction, query behavior, reasoning, memory integration, federation, and
+conformance requirements.
+
+#### Specification Content (AESP-0006)
+
+- Defines dual RDF/property graph support, typed node and edge models, property typing, graph identity, and graph containers.
+- Specifies entity and relationship modeling, including type hierarchies, cardinality, inverse predicates, n-ary relation reification, and entity merging.
+- Defines ontology and schema requirements using RDFS, OWL 2 profiles, SHACL validation, ontology versioning, and a baseline AEO ontology.
+- Adds query semantics for graph pattern queries, traversal, semantic search, temporal queries, and explainable query responses.
+- Specifies construction and extraction pipelines for ingestion, entity extraction, relationship extraction, entity resolution, and curation workflows.
+- Defines bounded reasoning and inference profiles, materialized and virtual inference, rule semantics, uncertainty, and contradiction handling.
+- Integrates knowledge graphs with AESP-0004 memory systems, including memory record mapping, retrieval composition, access-control alignment, and lifecycle synchronization.
+- Adds distributed knowledge graph semantics for federation, partitioning, replication, consistency, and cross-organization graph exchange.
+
+#### Normative Requirements
+
+- Introduces `KG-REQ-001` through `KG-REQ-126` for model architecture, ontology, query, construction, reasoning, memory integration, federation, implementation, and conformance.
+
+#### Assets
+
+- `specification/AESP-0006.md` — Chapters 1-4
+- `specification/AESP-0006-continued.md` — Chapters 5-8
+- `specification/AESP-0006-reference.md` — Chapters 9-12 and references
+- `specification/aesp-0006.yaml` — AESP-0006 metadata file
 
 ## [0.7.0] — 2026-07-10
 

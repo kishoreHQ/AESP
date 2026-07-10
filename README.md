@@ -76,7 +76,7 @@ AESP/
 │   ├── AESP-0003.md                   # Communication Protocols
 │   ├── AESP-0004.md                   # Memory Systems
 │   ├── AESP-0005.md                   # Workflow Orchestration
-│   ├── AESP-0006.md                   # Continuous Verification
+│   ├── AESP-0006.md                   # Knowledge Graph
 │   ├── AESP-0007.md                   # Code Generation
 │   ├── AESP-0008.md                   # Documentation Generator
 │   ├── AESP-0009.md                   # Deployment Automation
@@ -116,7 +116,7 @@ AESP/
 | **AESP-0003** | Communication Protocols | DRAFT | Foundation |
 | **AESP-0004** | Memory Systems | DRAFT | Foundation |
 | **AESP-0005** | Workflow Orchestration | DRAFT | Foundation |
-| **AESP-0006** | Continuous Verification | DRAFT | Infrastructure |
+| **AESP-0006** | Knowledge Graph | DRAFT | Infrastructure |
 | **AESP-0007** | Code Generation | DRAFT | Infrastructure |
 | **AESP-0008** | Documentation Generator | DRAFT | Infrastructure |
 | **AESP-0009** | Deployment Automation | DRAFT | Infrastructure |

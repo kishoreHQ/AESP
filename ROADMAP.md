@@ -49,12 +49,12 @@ knowledge management.
 
 ## Phase 2: Infrastructure (Q4 2026)
 
-**Goal**: Define the operational infrastructure layer — verification, code
+**Goal**: Define the operational infrastructure layer — knowledge graphs, code
 generation, documentation, deployment, and testing.
 
 | Spec | Title | Objective | Target |
 |------|-------|-----------|--------|
-| AESP-0006 | Continuous Verification | Specify continuous validation protocols, assertion frameworks, drift detection, and compliance monitoring | October 2026 |
+| AESP-0006 | Knowledge Graph | Specify entity and relationship modeling, ontology and schema languages, query semantics, construction, reasoning, memory integration, and graph federation | October 2026 |
 | AESP-0007 | Code Generation | Define code generation protocols, template engines, output validation, and artifact lifecycle management | October 2026 |
 | AESP-0008 | Documentation Generator | Specify automated documentation generation, schema-to-docs pipelines, and living documentation patterns | November 2026 |
 | AESP-0009 | Deployment Automation | Define deployment orchestration, rollout strategies, rollback procedures, and environment promotion | November 2026 |
@@ -152,9 +152,9 @@ gantt
     AESP-0002 Intent               :a0002, 2026-08-01, 2026-08-15
     AESP-0003 Declarative Infra    :a0003, 2026-08-15, 2026-08-31
     AESP-0004 Scaffolding          :a0004, 2026-09-01, 2026-09-15
-    AESP-0005 Knowledge Graph      :a0005, 2026-09-15, 2026-09-30
+    AESP-0005 Workflow            :a0005, 2026-09-15, 2026-09-30
     section Infrastructure
-    AESP-0006 Verification         :a0006, 2026-10-01, 2026-10-15
+    AESP-0006 Knowledge Graph      :a0006, 2026-10-01, 2026-10-15
     AESP-0007 Code Generation      :a0007, 2026-10-15, 2026-10-31
     AESP-0008 Documentation        :a0008, 2026-11-01, 2026-11-15
     AESP-0009 Deployment           :a0009, 2026-11-15, 2026-11-30

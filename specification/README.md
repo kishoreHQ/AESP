@@ -33,7 +33,7 @@ engineering domain.
 
 | Spec | Title | Status | Description |
 |------|-------|--------|-------------|
-| [AESP-0006](AESP-0006.md) | Continuous Verification | DRAFT | Continuous validation protocols, assertion frameworks, drift detection, and compliance monitoring. Defines how systems continuously verify that actual state matches declared intent. |
+| [AESP-0006](AESP-0006.md) | Knowledge Graph | DRAFT | Knowledge graph semantics, entity and relationship modeling, ontology and schema languages, query semantics, construction, reasoning, memory integration, and graph federation. |
 | [AESP-0007](AESP-0007.md) | Code Generation | DRAFT | Code generation protocols, template engines, output validation, and artifact lifecycle management. Specifies how production code is generated from higher-level specifications. |
 | [AESP-0008](AESP-0008.md) | Documentation Generator | DRAFT | Automated documentation generation, schema-to-docs pipelines, and living documentation patterns. Defines how documentation is derived from and kept in sync with system artifacts. |
 | [AESP-0009](AESP-0009.md) | Deployment Automation | DRAFT | Deployment orchestration, rollout strategies, rollback procedures, and environment promotion. Specifies the safe, automated movement of artifacts across environments. |
@@ -67,7 +67,7 @@ graph TD
     end
 
     subgraph Infrastructure
-        A0006[AESP-0006 Verification]
+        A0006[AESP-0006 Knowledge Graph]
         A0007[AESP-0007 Code Gen]
         A0008[AESP-0008 Docs]
         A0009[AESP-0009 Deploy]
