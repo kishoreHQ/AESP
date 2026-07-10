@@ -65,7 +65,7 @@ generation, documentation, deployment, and testing.
 - [x] AESP-0006 Knowledge Graph published (DRAFT)
 - [x] AESP-0007 Code Generation published (DRAFT)
 - [x] AESP-0008 Documentation Generator published (DRAFT)
-- [ ] AESP-0009 Deployment Automation published
+- [x] AESP-0009 Deployment Automation published (DRAFT)
 - [ ] AESP-0010 Testing & Validation published
 - [ ] All five specifications reach DRAFT status with complete normative content
 - [ ] Integration points with Phase 1 specifications fully defined

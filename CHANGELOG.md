@@ -9,7 +9,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Planned
-- AESP-0009 through AESP-0015
+- AESP-0010 through AESP-0015
+
+## [1.1.0] — 2026-07-10
+
+### Added — AESP-0009: Deployment Automation
+
+This release adds the deployment automation specification for autonomous
+engineering organizations, defining deployment request contracts, environment
+and target models, rollout strategies, progressive delivery and health gates,
+rollback, environment promotion, freeze windows, provenance, policy controls,
+and conformance requirements.
+
+#### Specification Content (AESP-0009)
+
+- Defines deployment model architecture with request/session surfaces, controllers, gate engine, session state machine, and structured errors.
+- Specifies immutable artifact identity, environment policy profiles, multi-target semantics, and desired vs observed state.
+- Defines rollout strategies: recreate, rolling, blue/green, canary, and shadow/dark launch.
+- Adds execution pipelines with pre/post hooks, pause/abort, timeouts, provenance, and workflow correlation.
+- Specifies health gates, metric baselines, automated canary analysis, traffic weight observation, and human holds.
+- Defines rollback modes, abort vs rollback, and post-rollback duties.
+- Standardizes promotion chains, freeze windows, multi-region policies, and release-train batching.
+- Adds security controls for authorization, supply-chain admission, secrets, policy packs, and blast-radius limits.
+- Defines L1–L3 conformance levels and test vector families.
+
+#### Normative Requirements
+
+- Introduces `DEP-REQ-001` through `DEP-REQ-151` for architecture, artifacts/environments, strategies, execution, gates, rollback, promotion, security, implementation, and conformance.
+
+#### Assets
+
+- `specification/AESP-0009.md` — Chapters 1-4
+- `specification/AESP-0009-continued.md` — Chapters 5-8
+- `specification/AESP-0009-reference.md` — Chapters 9-12 and references
+- `specification/aesp-0009.yaml` — AESP-0009 metadata file
 
 ## [1.0.0] — 2026-07-10
 

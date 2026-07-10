@@ -36,7 +36,7 @@ engineering domain.
 | [AESP-0006](AESP-0006.md) | Knowledge Graph | DRAFT | Knowledge graph semantics, entity and relationship modeling, ontology and schema languages, query semantics, construction, reasoning, memory integration, and graph federation. |
 | [AESP-0007](AESP-0007.md) | Code Generation | DRAFT | Code generation request and response contracts, template and model-driven modes, determinism and provenance, multi-file generation, output validation, artifact lifecycle, review workflows, and conformance requirements. |
 | [AESP-0008](AESP-0008.md) | Documentation Generator | DRAFT | Documentation request contracts, schema-to-docs and living documentation pipelines, source pinning and drift detection, multi-format publishing, quality validation, document lifecycle, and conformance requirements. |
-| [AESP-0009](AESP-0009.md) | Deployment Automation | DRAFT | Deployment orchestration, rollout strategies, rollback procedures, and environment promotion. Specifies the safe, automated movement of artifacts across environments. |
+| [AESP-0009](AESP-0009.md) | Deployment Automation | DRAFT | Deployment request contracts, environment and target models, rollout strategies, progressive delivery and health gates, rollback, environment promotion, freeze windows, provenance, and conformance requirements. |
 | [AESP-0010](AESP-0010.md) | Testing & Validation | DRAFT | Testing frameworks, validation protocols, test generation, and coverage requirements. Defines comprehensive testing at unit, integration, system, and acceptance levels. |
 
 ### Phase 3: Operations (Q1 2027)
@@ -96,10 +96,14 @@ graph TD
     A0005 --> A0008
     A0006 --> A0007
     A0007 --> A0008
+    A0005 --> A0009
+    A0007 --> A0009
+    A0008 --> A0009
 
     A0006 --> A0010
     A0007 --> A0010
     A0008 --> A0010
+    A0009 --> A0010
     A0009 --> A0012
 
     A0011 --> A0012

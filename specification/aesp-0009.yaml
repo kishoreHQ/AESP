@@ -1,0 +1,9 @@
+id: AESP-0009
+title: Deployment Automation
+status: draft
+category: protocol
+version: "0.1.0"
+authors: ["AESP Technical Committee"]
+date: "2026-07-10"
+description: "Specifies deployment automation protocols, environment and target models, artifact promotion, rollout strategies, progressive delivery and health gates, rollback procedures, freeze windows, deployment provenance, policy controls, and conformance requirements for autonomous engineering organizations."
+dependencies: ["AESP-0000", "AESP-0001", "AESP-0003", "AESP-0005", "AESP-0007", "AESP-0008"]
