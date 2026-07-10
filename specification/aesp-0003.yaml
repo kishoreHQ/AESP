@@ -1,0 +1,39 @@
+id: AESP-0003
+title: Communication Protocols
+version: 1.0.0-Draft
+status: Draft
+category: Standards Track
+date: 2026-07-10
+authors:
+  - AESP Standards Committee
+abstract: >
+  Defines message formats, transport layer bindings, communication patterns,
+  capability discovery, error handling, security, session management, and
+  multi-agent coordination protocols for Autonomous Engineering Organizations
+  (AEOs) conforming to the AESP standard family.
+related:
+  - AESP-0000
+  - AESP-0001
+  - AESP-0002
+requires:
+  - AESP-0000
+  - AESP-0001
+  - AESP-0002
+files:
+  main:
+    - specification/AESP-0003.md
+    - specification/AESP-0003-continued.md
+    - specification/AESP-0003-reference.md
+  format:
+    - specification/aesp-0003.yaml
+    - dist/AESP-0003.docx
+  changelog: CHANGELOG.md
+statistics:
+  word_count: ~49000
+  chapters: 12
+  tables: 40
+  json_schemas: 20
+  sequence_diagrams: 15
+  case_studies: 9
+  requirements: 132
+  citations: 92
