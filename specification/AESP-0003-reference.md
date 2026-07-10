@@ -442,4 +442,163 @@ The mesh eliminates the SPOF but pays $O(n^2)$ connection complexity in the wors
 
 The hierarchical tree topology generalizes hub-and-spoke by making every agent a potential hub for its own subtree. Decisions cascade down the hierarchy while information bubbles up, with each level abstracting complexity for the level above [^3^]. This topology naturally models organizations with nested authority structures and supports recursive delegation as required by REQ-074 (hierarchical delegation).
 
-Tree topologies inherit hub-and-spoke properties at each level: $O(n)$ complexity within a subtree, SPOF at each internal node, and depth limits imposed by context window co
+Tree topologies inherit hub-and-spoke properties at each level: $O(n)$ complexity within a subtree, SPOF at each internal node, and depth limits imposed by context window constraints. The maximum practical depth for LLM-based agents is three to four levels before accumulated context compression obscures critical details.
+
+### 10.1.4 Topology Selection Criteria
+
+Topology selection MUST be driven by four factors: task structure (linear, branching, or cyclic), agent count, fault tolerance requirements, and debuggability needs. Table 10.1 compares the four topologies across these dimensions.
+
+**Table 10.1: Topology Comparison Matrix**
+
+| Criterion | Hub-and-Spoke | Peer-to-Peer Mesh | Hierarchical Tree | Hybrid |
+|---|---|---|---|---|
+| Coordination complexity | $O(n)$ [^9^] | $O(n^2)$ worst case [^8^] | $O(n)$ per subtree [^3^] | $O(n)$ governance + $O(k^2)$ peers |
+| SPOF count | 1 (hub) [^10^] | 0 [^6^] | $h$ internal nodes | 1 per governance cell |
+| Max agents before degradation | ~7 [^10^] | 1000+ [^7^] | ~20 (4 levels × 5) | Scales with cell size |
+| Context window risk | High (hub overflow) [^10^] | Low (local only) [^8^] | Medium (per-level) | Mitigated by cell boundaries |
+| Debuggability | High (central log) [^11^] | Low (distributed trace) [^13^] | Medium (per-subtree log) | High for governance, low for mesh |
+| Best use case | Governance, deterministic flow | Open-ended exploration | Recursive decomposition | Production multi-domain systems |
+
+Hub-and-spoke excels for governance, deterministic control flow, and simple operations where a single coordinator can maintain full context [^11^]. Mesh topologies suit open-ended exploration tasks where the problem space is too large for a single coordinator to decompose effectively [^8^]. Hierarchical trees map naturally to recursive task decomposition. For production systems, AESP-0003 RECOMMENDS hybrid composition: hub-and-spoke cells for governance, with mesh links enabling peer collaboration within each cell. This satisfies REQ-100 (horizontal scaling) by limiting any single hub's spoke count and REQ-096 (fault isolation) by containing failures within cells.
+
+## 10.2 Delegation Patterns
+
+Delegation patterns define how work moves from one agent to another. REQ-070 mandates supervisor-worker support, REQ-074 mandates hierarchical delegation, and REQ-102 mandates fan-out patterns. This section specifies four delegation patterns that together satisfy these requirements.
+
+### 10.2.1 Supervisor-Worker
+
+The supervisor-worker pattern implements REQ-070 directly. A supervisor agent receives a goal, decomposes it into subtasks, assigns each subtask to a worker agent, monitors progress, collects results, and integrates them into a final output [^9^]. The supervisor maintains the authoritative task state machine as required by REQ-071.
+
+The following JSON Schema defines the TaskDelegation message used when a supervisor assigns work to a worker:
+
+```json
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "TaskDelegation",
+  "type": "object",
+  "required": ["delegationId", "taskId", "supervisor", "worker", "taskSpec", "deadline", "idempotencyKey"],
+  "properties": {
+    "delegationId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Unique identifier for this delegation instance"
+    },
+    "taskId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Identifier of the parent task being delegated"
+    },
+    "supervisor": {
+      "type": "object",
+      "required": ["agentId", "endpoint"],
+      "properties": {
+        "agentId": { "type": "string" },
+        "endpoint": { "type": "string", "format": "uri" }
+      }
+    },
+    "worker": {
+      "type": "object",
+      "required": ["agentId", "endpoint"],
+      "properties": {
+        "agentId": { "type": "string" },
+        "endpoint": { "type": "string", "format": "uri" },
+        "capabilityFilter": { "type": "string", "description": "Required capability for worker selection" }
+      }
+    },
+    "taskSpec": {
+      "type": "object",
+      "required": ["description", "input", "expectedOutput"],
+      "properties": {
+        "description": { "type": "string", "description": "Human-readable task description" },
+        "input": { "type": "object", "description": "Task input parameters" },
+        "expectedOutput": { "type": "object", "description": "Schema for expected output" },
+        "qualityGates": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "checkType": { "type": "string", "enum": ["schema_validation", "semantic_check", "human_approval"] },
+              "config": { "type": "object" }
+            }
+          }
+        }
+      }
+    },
+    "deadline": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Absolute UTC deadline for task completion"
+    },
+    "idempotencyKey": {
+      "type": "string",
+      "description": "Client-generated key for at-least-once deduplication"
+    },
+    "retryPolicy": {
+      "type": "object",
+      "properties": {
+        "maxAttempts": { "type": "integer", "minimum": 1, "default": 3 },
+        "backoffMs": { "type": "integer", "minimum": 0, "default": 1000 },
+        "nonRetryableErrors": { "type": "array", "items": { "type": "string" } }
+      }
+    }
+  }
+}
+```
+
+The TaskDelegation message carries an absolute deadline (satisfying the deadline propagation requirement from Chapter 3), an idempotency key (satisfying REQ-095), and an optional quality gate array for semantic validation (satisfying the layered resilience requirement from Chapter 7). Workers MUST acknowledge receipt within the timeout specified in the supervisor's circuit breaker configuration; unacknowledged delegations MUST transition to a retry or escalation path per the saga pattern defined in Chapter 7.
+
+The supervisor-worker pattern with streaming updates is illustrated in Figure 10.1.
+
+```mermaid
+sequenceDiagram
+    participant S as Supervisor
+    participant W1 as Worker A
+    participant W2 as Worker B
+    participant W3 as Worker C
+    participant Q as Quality Gate
+
+    S->>S: Decompose goal into subtasks T1, T2, T3
+    par Fan-out delegation
+        S->>W1: TaskDelegation(T1, deadline=D, idemKey=K1)
+        W1-->>S: ACK (delegationId)
+        S->>W2: TaskDelegation(T2, deadline=D, idemKey=K2)
+        W2-->>S: ACK (delegationId)
+        S->>W3: TaskDelegation(T3, deadline=D, idemKey=K3)
+        W3-->>S: ACK (delegationId)
+    end
+    par Streaming progress
+        W1->>S: TaskUpdate(status=working, artifact=partial1)
+        W2->>S: TaskUpdate(status=working, artifact=partial2)
+        W3->>S: TaskUpdate(status=completed, artifact=result3)
+    end
+    W1->>S: TaskUpdate(status=completed, artifact=result1)
+    W2->>S: TaskUpdate(status=completed, artifact=result2)
+    S->>Q: Validate consolidated results
+    alt Validation passes
+        Q-->>S: APPROVED
+        S->>S: Integrate final output
+    else Validation fails
+        Q-->>S: REJECTED with reason
+        S->>W1: Re-delegate or escalate
+    end
+```
+
+**Figure 10.1**: Supervisor-worker pattern with streaming progress updates and quality gate validation. The supervisor fans out delegations in parallel, receives streaming status updates, validates consolidated results, and either approves or re-delegates.
+
+### 10.2.2 Hierarchical Delegation
+
+Hierarchical delegation extends supervisor-worker by making any worker a supervisor for its own subordinates, forming a delegation tree. REQ-074 requires support for recursive decomposition with tree traversal aggregation. Each internal node in the delegation tree is both a worker (to its parent) and a supervisor (to its children). The maximum depth MUST be bounded — AESP-0003 recommends a default limit of four levels to prevent context degradation at lower levels.
+
+### 10.2.3 Contract Net Protocol
+
+The Contract Net Protocol (CNP), introduced by Reid G. Smith in 1980, established the foundational paradigm for task allocation in multi-agent systems through an announce-bid-award cycle [^18^]. CNP operates through three phases: (1) a manager agent announces a task with requirements and constraints; (2) contractor agents evaluate the announcement and submit bids if capable; (3) the manager awards the contract to the best bidder [^21^].
+
+CNP offers two key advantages over fixed supervisor-worker assignment. First, it has lower communication overhead than broadcast-everywhere approaches [^21^]. Second, it is naturally load-balancing: busy agents simply do not bid, so work flows to idle agents without explicit coordination. The Foundation for Intelligent Physical Agents (FIPA) developed a standardized version with formal ontologies and agent communication languages (ACL) [^20^], but modern extensions such as the Agent Capability Negotiation and Binding Protocol (ACNBP) address limitations including static capability descriptions and lack of security mechanisms for open agent ecosystems [^18^].
+
+CNP satisfies REQ-069 (agent-to-agent direct messaging) because any agent may announce tasks, and REQ-102 (fan-out) because a manager may announce to all reachable contractors simultaneously. Implementations MUST handle the auctioneer SPOF by designating a backup manager or by using a consensus-based award phase when the primary manager fails.
+
+### 10.2.4 Fan-Out and Bounded Concurrency
+
+The fan-out pattern distributes one event to $N$ subscribers simultaneously, reducing end-to-end latency compared to sequential execution [^6^]. When combined with a subsequent fan-in phase, it implements the map-reduce pattern: distribute subtasks to $N$ workers, then collect and reduce their outputs. REQ-102 explicitly requires fan-out support for distributed processing.
+
+Bounded concurrency is achieved through the bulkhead pattern: each worker pool has a fixed capacity, and excess tasks are queued or rejected rather than consuming unbounded resources. AESP-0003 RECOMMENDS that fan-out implementations specify a `maxConcurrency` parameter defaulting to the worker pool size, with overflow tasks placed on a durable queue. Production AI agent pipeline architecture
