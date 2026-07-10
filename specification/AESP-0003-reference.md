@@ -363,4 +363,83 @@ When an agent requires external input, it transitions the task to `input-require
 While paused, the task makes no forward progress. The agent MAY release ephemeral resources but MUST preserve execution context sufficient to resume exactly where paused: conversation history, partial tool results, variable state, and execution plan position.
 
 ```mermaid
-sequenceDia
+sequenceDiagram
+    participant C as Client (Delegator)
+    participant S as Server
+    participant A as Agent
+    participant H as Human Operator
+    C->>S: tasks/sendSubscribe
+    S->>A: Forward request
+    A->>S: state: in-progress
+    S->>C: SSE: in-progress
+    A->>A: Needs database deletion approval
+    A->>S: state: input-required
+    Note over A: Pause execution, preserve context
+    S->>C: SSE: input-required, "Approve DB deletion?"
+    C->>H: Route approval request
+    H->>C: Approve
+    C->>S: tasks/send (approval)
+    S->>A: Resume with approval
+    Note over A: Restore context, continue
+    A->>S: state: in-progress
+    S->>C: SSE: in-progress
+    A->>A: Complete task
+    A->>S: state: completed
+    S->>C: SSE: completed + artifacts
+```
+
+**Figure 9.2** — Input-required pause-and-resume sequence. The agent pauses for human approval; the response resumes execution from preserved context. All transitions delivered via SSE events.
+
+#### 9.6.2 Resumption Channels
+
+Three channels are supported, usable individually or in combination. **Message-based**: the client sends input via the standard protocol path; the server routes to the paused agent. This is the default and works across all transports. **Webhook-based**: the server calls a pre-registered webhook with request details; the external system responds via HTTP callback. Essential for serverless clients, mobile background mode, and batch systems. **Human-in-the-loop**: delegates to a human via out-of-band channels (email, Slack, approval UI); an adapter translates the response into a protocol message. Required for high-stakes decisions where automated responses are insufficient.
+
+A2A's three-tier system—SSE streaming, webhook push notifications, and polling fallback—provides the transport foundation for these channels [^5^]. The input-required state is a first-class design feature that addresses a genuine gap in distributed systems protocols: traditional RPC assumes the client sends all needed data upfront, while agent workflows frequently require mid-execution human input [^32^].
+
+#### 9.6.3 Timeout Interaction
+
+When a task enters `input-required`, the overall deadline extends by the input timeout duration. If a task has a 10-minute deadline and the input request specifies 5 minutes, the effective deadline becomes 15 minutes from start. This acknowledges that input-required pauses are normal workflow elements, not failures.
+
+If the input timeout expires without response, the task transitions to `failed` with code `INPUT_TIMEOUT`. The failure record includes the original request, timeout duration, and timestamp. If a response arrives after timeout but before the server durably commits the failure, the server MUST accept and resume (at-least-once semantics). Once the timeout is durably recorded, late responses are rejected with `TASK_ALREADY_TERMINATED`.
+
+#### 9.6.4 Security and Approval Workflows
+
+For critical actions—financial transactions, data deletion, privilege escalation, code deployment—the agent MUST await explicit human approval via `input-required`. Multi-signature requirements use the `requiredApprovers` field: the task resumes only after all listed approvers assent. Partial approvals are durably recorded so that if timeout occurs, the delegator knows which approvers responded.
+
+The input request SHOULD include a cryptographic hash of the action (tool, arguments, targets, expected effects), enabling approvers to verify the described action matches the intended one. This prevents attacks where a compromised agent requests approval for an innocuous action while planning a malicious one.
+
+**Case Study: MCP Stateless Migration.** In July 2026, MCP underwent fundamental architectural change to stateless-first through six coordinated Specification Enhancement Proposals. SEP-2575 eliminated the `initialize` handshake and `Mcp-Session-Id` header, converting MCP from stateful sessions to self-contained requests that any server instance could handle [^29^]. Three specific problems motivated the change: sticky sessions impeded horizontal scaling by requiring complex load-balancing configurations; server failure caused session state loss with no recovery path; and per-client state management produced memory leaks, session management bugs, and garbage-collection complexity [^30^].
+
+The migration moved session context into request payloads. Servers became stateless request processors, enabling horizontal scaling without session affinity, serverless deployment without warm-pool constraints, and instant failover without state migration. Production MCP deployments now use in-memory JavaScript Maps or objects for active transports, with timeout-based cleanup for abandoned sessions [^4^]. For multi-instance deployments, operators supplement with Redis or database storage.
+
+The lesson for AESP-0003 is clear: minimize protocol-layer session state and push durability to external storage when required. MCP post-migration session state is "intentionally lightweight... if the socket dies, recovery is 'not catastrophic' because no durable data is lost" [^3^]. For tool access scenarios, stateless mode is the correct default. For complex multi-agent orchestration, stateful mode with externalized storage provides necessary semantics without sacrificing scalability. Implementations MAY start stateless and promote to stateful when multi-turn complexity warrants it, using the selection criteria in Table 9.1 as the decision framework.
+
+---
+
+# 10. Multi-Agent Communication Patterns
+
+Chapter 5 defined the four core interaction primitives — request-response, publish-subscribe, broadcast, and streaming — that agents use to exchange information. Chapter 7 layered reliability semantics on top: circuit breakers, saga compensation, semantic validation, and durable execution. This chapter scales those foundations to systems of many agents. It answers the question: *given a pool of agents with diverse capabilities, how should they be arranged, how should work flow among them, and how should they agree on shared state?*
+
+The patterns described here satisfy REQ-069 through REQ-076 and REQ-100 through REQ-102. They are drawn from four decades of distributed artificial intelligence research, extending from Reid G. Smith's original Contract Net Protocol (1980) through the FIPA standardization era of the 1990s to the present day, where multi-agent orchestration frameworks such as Google's Agent Development Kit (ADK), AG2 (AutoGen), and LangGraph implement these abstractions at production scale [^18^] [^9^].
+
+## 10.1 Communication Topologies
+
+A communication topology defines the graph structure over which agent messages travel. The choice of topology constrains every other design decision: latency bounds, fault tolerance, observability, and the complexity of debugging. A peer-reviewed survey published in *MDPI Future Internet* (2026) establishes a $3 \times 2$ taxonomy of coordination topologies — centralized, decentralized, and hierarchical — crossed with static and dynamic adaptivity [^8^]. AESP-0003 recognizes four production topologies derived from this taxonomy.
+
+### 10.1.1 Hub-and-Spoke (Centralized Star)
+
+In the hub-and-spoke pattern, a single coordinator agent (the hub) maintains system-wide context and delegates to specialist agents (the spokes) that do not communicate directly with each other [^9^]. The coordinator handles task decomposition, specialist selection, and final integration.
+
+The topology produces exactly $2n$ directed edges for $n$ spoke agents, yielding $O(n)$ coordination complexity and $O(1)$ routing at the hub [^10^]. This linear scaling makes hub-and-spoke attractive for small ensembles. However, production deployments encounter three failure modes. First, the hub is a single point of failure (SPOF); its failure halts all coordination. Second, routing quality degrades as context depth exceeds the model's effective window — empirical observation places this threshold at approximately seven spoke agents [^10^]. Third, information withholding occurs when critical context discovered by one spoke never reaches another because the hub fails to relay it [^10^]. REQ-070 (supervisor-worker delegation) is most naturally satisfied by hub-and-spoke, but implementations MUST plan for hierarchical decomposition once the spoke count exceeds seven.
+
+### 10.1.2 Peer-to-Peer Mesh
+
+In a mesh topology, no central coordinator exists. Agents communicate directly, each deciding autonomously when to act, whom to consult, and how to contribute [^8^]. Task allocation emerges from negotiation and self-selection; each agent holds local state and makes its own routing decisions.
+
+The mesh eliminates the SPOF but pays $O(n^2)$ connection complexity in the worst case. Gossip protocols mitigate this: each agent randomly selects a fixed number of peers per round, achieving $O(1)$ communication per agent per round and $O(\log N)$ convergence across the network [^7^]. The Gossip-Enhanced Agentic Coordination Layer (GEACL) proposal positions gossip as a decentralized substrate beneath structured protocols, providing runtime peer discovery without centralized registries, distributed task-awareness dissemination, and gradual semantic convergence through anti-entropy reconciliation [^6^]. REQ-072 (peer-to-peer collaboration) is satisfied by mesh topologies with gossip-based discovery.
+
+### 10.1.3 Hierarchical Tree
+
+The hierarchical tree topology generalizes hub-and-spoke by making every agent a potential hub for its own subtree. Decisions cascade down the hierarchy while information bubbles up, with each level abstracting complexity for the level above [^3^]. This topology naturally models organizations with nested authority structures and supports recursive delegation as required by REQ-074 (hierarchical delegation).
+
+Tree topologies inherit hub-and-spoke properties at each level: $O(n)$ complexity within a subtree, SPOF at each internal node, and depth limits imposed by context window co
