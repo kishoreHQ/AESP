@@ -9,6 +9,7 @@ engineering domain.
 
 | Status | Description |
 |--------|-------------|
+| PLANNED | Reserved in the roadmap but not yet authored. |
 | DRAFT | Under active development. Content is incomplete and subject to breaking changes. |
 | CANDIDATE | Feature-complete. Undergoing final review before stabilization. |
 | STABLE | Released. Only backward-compatible changes permitted. |
@@ -22,11 +23,11 @@ engineering domain.
 | Spec | Title | Status | Description |
 |------|-------|--------|-------------|
 | [AESP-0000](AESP-0000.md) | Specification Governance & Process | DRAFT | Governance model, change process, version control, and contribution workflow for all AESP specifications. Defines the rules by which all other specifications are created, reviewed, and maintained. |
-| [AESP-0001](AESP-0001.md) | Architecture Overview | DRAFT | Canonical reference architecture for autonomous engineering platforms. Defines component model, data flow, system boundaries, and the structural relationships between all AESP concerns. |
-| [AESP-0002](AESP-0002.md) | Intent & Prompt Engineering | DRAFT | Intent representation, prompt lifecycle management, prompt versioning, and the intent-to-execution pipeline. Defines how human intent is captured, validated, and translated into machine-actionable operations. |
-| [AESP-0003](AESP-0003.md) | Declarative Infrastructure | DRAFT | Declarative state model, schema definitions, resource descriptors, and state reconciliation patterns. Specifies the "what not how" approach to infrastructure definition. |
-| [AESP-0004](AESP-0004.md) | Scaffolding & Project Templates | DRAFT | Project generation patterns, template schemas, initialization workflows, and bootstrap procedures. Defines how new projects and services are instantiated from approved templates. |
-| [AESP-0005](AESP-0005.md) | Knowledge Graph & Memory | DRAFT | Knowledge graph model, memory lifecycle, context management, and persistent learning patterns. Specifies how systems accumulate, organize, and leverage operational knowledge over time. |
+| [AESP-0001](AESP-0001.md) | Core Model | DRAFT | Foundational AEO data model for agents, organizations, roles, work units, capabilities, resources, state, identity, and extensibility. |
+| [AESP-0002](AESP-0002.md) | Agent Roles | DRAFT | Role templates, responsibilities, permission boundaries, escalation expectations, and role-based operational patterns for autonomous engineering agents. |
+| [AESP-0003](AESP-0003.md) | Communication Protocols | DRAFT | Message envelopes, transport bindings, communication patterns, capability discovery, reliability, security, sessions, and multi-agent coordination. |
+| [AESP-0004](AESP-0004.md) | Memory Systems | DRAFT | Memory architectures, operations, storage backends, retrieval mechanisms, distributed consistency, lifecycle controls, and inter-agent memory sharing protocols. |
+| AESP-0005 | Workflow Orchestration | PLANNED | Workflow graphs, execution semantics, failure handling, scheduling, and cross-agent orchestration patterns. |
 
 ### Phase 2: Infrastructure (Q4 2026)
 
@@ -58,11 +59,11 @@ referenced by specifications in later phases.
 graph TD
     subgraph Foundation
         A0000[AESP-0000 Governance]
-        A0001[AESP-0001 Architecture]
-        A0002[AESP-0002 Intent]
-        A0003[AESP-0003 Declarative]
-        A0004[AESP-0004 Scaffolding]
-        A0005[AESP-0005 Knowledge]
+        A0001[AESP-0001 Core Model]
+        A0002[AESP-0002 Agent Roles]
+        A0003[AESP-0003 Communication]
+        A0004[AESP-0004 Memory]
+        A0005[AESP-0005 Workflow]
     end
 
     subgraph Infrastructure
@@ -84,11 +85,11 @@ graph TD
     A0000 --> A0001
     A0001 --> A0002
     A0001 --> A0003
-    A0001 --> A0005
-    A0002 --> A0007
-    A0003 --> A0006
-    A0003 --> A0009
-    A0004 --> A0007
+    A0001 --> A0004
+    A0002 --> A0005
+    A0003 --> A0004
+    A0003 --> A0005
+    A0004 --> A0005
     A0005 --> A0011
     A0005 --> A0012
 
@@ -134,4 +135,4 @@ conventions defined in AESP-0000.
 
 ---
 
-*Last updated: 2026-07-09*
+*Last updated: 2026-07-10*

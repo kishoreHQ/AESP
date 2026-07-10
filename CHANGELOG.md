@@ -9,10 +9,68 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Planned
-- AESP-0004: Memory Systems
 - AESP-0005: Workflow Orchestration
 - AESP-0006: Knowledge Graph
 - AESP-0007 through AESP-0015
+
+## [0.6.0] — 2026-07-10
+
+### Added — AESP-0004: Memory Systems
+
+This release adds the memory systems specification for autonomous agents, defining
+typed memory records, memory operations, backend roles, retrieval mechanisms,
+distributed consistency, lifecycle controls, inter-agent memory sharing, security
+requirements, and conformance tests.
+
+#### Specification Content (AESP-0004)
+
+**Chapter 1: Introduction** — Purpose and scope, four-type memory taxonomy,
+relationship to AESP-0000/0001/0003, normative language, design principles, and
+core terminology for agent memory systems.
+
+**Chapter 2: Memory Model Architecture** — Working, episodic, semantic, and
+procedural memory types; memory scopes; ownership rules; and the JSON
+`MemoryRecord` data model.
+
+**Chapter 3: Memory Operations** — Store, retrieve, update, delete, forget,
+suppress, restore, consolidate, export, import, migrate, compact, and audit
+operation semantics.
+
+**Chapter 4: Storage Backends** — Backend role model for context windows, event
+logs, vector indexes, relational stores, knowledge graphs, object stores, and
+key-value stores.
+
+**Chapter 5: Retrieval Mechanisms** — Similarity, lexical, hybrid, temporal,
+associative, graph, and working-memory selection semantics.
+
+**Chapter 6: Distributed Memory** — Consistency levels, event sourcing alignment,
+CRDT mappings, remove-wins deletion, and conflict resolution rules.
+
+**Chapter 7: Memory Lifecycle** — Admission, active use, suppression,
+consolidation, archival, expiry, forgetting, tombstoning, and rehydration.
+
+**Chapter 8: Inter-Agent Memory Protocol** — Memory capability declarations,
+sharing leases, subscriptions, and federation requirements using AESP-0003
+message envelopes.
+
+**Chapter 9: Security and Privacy** — Threat model, authorization, privacy,
+data minimization, prompt injection, and memory poisoning controls.
+
+**Chapter 10: Implementation Guidelines** — Minimum viable implementation,
+recommended event-sourced architecture, anti-patterns, and migration guidance.
+
+**Chapter 11: Conformance and Testing** — Conformance tiers, test families, and
+evaluation metrics for retrieval quality, policy safety, and task outcomes.
+
+**Chapter 12: Appendices** — Error codes, example retrieval response,
+requirement index, and references.
+
+#### Assets
+
+- `specification/AESP-0004.md` — Chapters 1-4
+- `specification/AESP-0004-continued.md` — Chapters 5-8
+- `specification/AESP-0004-reference.md` — Chapters 9-12 and references
+- `specification/aesp-0004.yaml` — AESP-0004 metadata file
 
 ## [0.5.0] — 2026-07-10
 
@@ -104,4 +162,3 @@ semantic versioning (MAJOR/MINOR/PATCH), backward compatibility guarantee,
 - 40 tables, 20 JSON schemas, 15 sequence diagrams, 9 case studies
 
 ---
-

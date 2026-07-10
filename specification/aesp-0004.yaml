@@ -1,0 +1,9 @@
+id: AESP-0004
+title: Memory Systems
+status: draft
+category: protocol
+version: "0.1.0"
+authors: ["AESP Technical Committee"]
+date: "2026-07-10"
+description: "Specifies memory architectures, operations, storage backends, retrieval mechanisms, distributed consistency, lifecycle controls, security requirements, and inter-agent memory sharing protocols for autonomous agents."
+dependencies: ["AESP-0000", "AESP-0001", "AESP-0003"]

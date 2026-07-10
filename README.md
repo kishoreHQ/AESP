@@ -71,11 +71,11 @@ AESP/
 ├── specification/                     # AESP-NNNN specification documents
 │   ├── README.md                      # Index of all specifications
 │   ├── AESP-0000.md                   # Specification Governance & Process
-│   ├── AESP-0001.md                   # Architecture Overview
-│   ├── AESP-0002.md                   # Intent & Prompt Engineering
-│   ├── AESP-0003.md                   # Declarative Infrastructure
-│   ├── AESP-0004.md                   # Scaffolding & Project Templates
-│   ├── AESP-0005.md                   # Knowledge Graph & Memory
+│   ├── AESP-0001.md                   # Core Model
+│   ├── AESP-0002.md                   # Agent Roles
+│   ├── AESP-0003.md                   # Communication Protocols
+│   ├── AESP-0004.md                   # Memory Systems
+│   ├── AESP-0005.md                   # Workflow Orchestration
 │   ├── AESP-0006.md                   # Continuous Verification
 │   ├── AESP-0007.md                   # Code Generation
 │   ├── AESP-0008.md                   # Documentation Generator
@@ -111,11 +111,11 @@ AESP/
 | Spec | Title | Status | Phase |
 |------|-------|--------|-------|
 | **AESP-0000** | Specification Governance & Process | DRAFT | Foundation |
-| **AESP-0001** | Architecture Overview | DRAFT | Foundation |
-| **AESP-0002** | Intent & Prompt Engineering | DRAFT | Foundation |
-| **AESP-0003** | Declarative Infrastructure | DRAFT | Foundation |
-| **AESP-0004** | Scaffolding & Project Templates | DRAFT | Foundation |
-| **AESP-0005** | Knowledge Graph & Memory | DRAFT | Foundation |
+| **AESP-0001** | Core Model | DRAFT | Foundation |
+| **AESP-0002** | Agent Roles | DRAFT | Foundation |
+| **AESP-0003** | Communication Protocols | DRAFT | Foundation |
+| **AESP-0004** | Memory Systems | DRAFT | Foundation |
+| **AESP-0005** | Workflow Orchestration | PLANNED | Foundation |
 | **AESP-0006** | Continuous Verification | DRAFT | Infrastructure |
 | **AESP-0007** | Code Generation | DRAFT | Infrastructure |
 | **AESP-0008** | Documentation Generator | DRAFT | Infrastructure |
