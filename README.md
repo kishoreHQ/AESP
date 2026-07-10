@@ -129,12 +129,16 @@ AESP/
 
 ## Status
 
-**DRAFT v1.0 — Active Development**
+**DRAFT suite complete — AESP-0000 through AESP-0015**
 
-This specification is under active development and is subject to significant
-change. All documents in this repository carry DRAFT status unless explicitly
-marked otherwise. Implementations targeting this specification MUST account for
-breaking changes between DRAFT revisions.
+The full planned specification family (Phases 1–3) is authored at DRAFT
+maturity. Documents remain subject to change until promoted to `STABLE` under
+AESP-0000 governance. Implementations MUST account for breaking changes between
+DRAFT revisions.
+
+See [specification/ARCHITECTURE.md](specification/ARCHITECTURE.md) for the
+Agent Operating System layer map (Hermes, Mission Control, multi-agent control
+loop) and [CHANGELOG.md](CHANGELOG.md) for release history through **1.7.0**.
 
 Stable specifications will be published with `STABLE` status and a version
 number adhering to [Semantic Versioning](https://semver.org/).

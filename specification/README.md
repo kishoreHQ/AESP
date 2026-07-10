@@ -43,11 +43,11 @@ engineering domain.
 
 | Spec | Title | Status | Description |
 |------|-------|--------|-------------|
-| [AESP-0011](AESP-0011.md) | Observability | DRAFT | Telemetry standards, event schemas, metric aggregation, tracing, and alerting protocols. Specifies how systems expose and report their internal state and behavior. |
-| [AESP-0012](AESP-0012.md) | Remediation & Self-Healing | DRAFT | Automated remediation workflows, escalation chains, circuit breaker patterns, and healing strategies. Defines how systems detect and recover from failures without human intervention. |
-| [AESP-0013](AESP-0013.md) | Security & Compliance | DRAFT | Security frameworks, compliance mapping, audit logging, access control, and threat models. Specifies security-by-design principles and regulatory compliance mechanisms. |
-| [AESP-0014](AESP-0014.md) | Human-in-the-Loop | DRAFT | Human intervention points, approval workflows, escalation protocols, and operator interfaces. Defines when and how humans participate in autonomous system decisions. |
-| [AESP-0015](AESP-0015.md) | Integration & Interoperability | DRAFT | Integration protocols, API standards, adapter patterns, and cross-system communication. Specifies how autonomous engineering platforms integrate with external systems and tools. |
+| [AESP-0011](AESP-0011.md) | Observability | DRAFT | Telemetry signals, work-unit correlation, SLOs, alerting, pipelines, investigation packages, and conformance for Agent OS runtimes. |
+| [AESP-0012](AESP-0012.md) | Remediation & Self-Healing | DRAFT | Incidents, playbooks, automated actions, guardrails, verification, escalation, and deploy-rollback linkage for self-healing operations. |
+| [AESP-0013](AESP-0013.md) | Security & Compliance | DRAFT | Cross-cutting identity, authn/authz, secrets, classification, audit, supply chain, multi-agent threats, and compliance mapping. |
+| [AESP-0014](AESP-0014.md) | Human-in-the-Loop | DRAFT | Human task contracts, approvals, reviews, intervene/takeover, escalation SLAs, and Mission Control surfaces. |
+| [AESP-0015](AESP-0015.md) | Integration & Interoperability | DRAFT | Adapters, OpenAI/Anthropic-compatible and local LLM providers, MCP profile, plugins, discovery, and multi-vendor interoperability. |
 
 ## Specification Dependencies
 
@@ -109,11 +109,15 @@ graph TD
     A0009 --> A0012
 
     A0011 --> A0012
+    A0005 --> A0014
     A0011 --> A0014
     A0012 --> A0014
+    A0003 --> A0015
+    A0001 --> A0015
     A0013 -.-> A0000
-    A0013 -.-> A0006
+    A0013 -.-> A0002
     A0013 -.-> A0011
+    A0013 -.-> A0015
     A0015 --> A0001
 
     style A0000 fill:#e1f5fe
@@ -124,19 +128,22 @@ graph TD
     style A0005 fill:#e1f5fe
 ```
 
+For the Agent OS control loop, correlation keys, and Hermes recommended levels, see **[ARCHITECTURE.md](ARCHITECTURE.md)**.
+
 ## How to Read the Specifications
 
 Specifications SHOULD be read in the following order:
 
 1. **Start with AESP-0000** to understand the governance model and
    specification conventions.
-2. **Read AESP-0001** to understand the overall architecture and how all
-   components fit together.
+2. **Read AESP-0001** and **[ARCHITECTURE.md](ARCHITECTURE.md)** for the
+   suite-wide Agent OS map.
 3. **Proceed through Foundation** specifications (AESP-0002 through AESP-0005)
    in order, as later specifications build on earlier ones.
 4. **Continue through Infrastructure** (AESP-0006 through AESP-0010) and
-   **Operations** (AESP-0011 through AESP-0015) specifications, which may be
-   read in any order within their phase, though cross-references exist.
+   **Operations** (AESP-0011 through AESP-0015). Prefer reading 0013 (Security)
+   early when implementing production systems; read 0015 when integrating
+   providers, MCP, or plugins.
 
 ## Contributing
 

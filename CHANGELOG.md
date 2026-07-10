@@ -9,7 +9,49 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Planned
-- AESP-0011 through AESP-0015
+- Phase 4 ecosystem (reference implementations, conformance suites)
+- Community review toward STABLE
+
+## [1.7.0] — 2026-07-10
+
+### Added — AESP-0015: Integration & Interoperability
+
+- Adapter/connector architecture, LLM provider bindings (OpenAI-compatible, Anthropic-compatible, local).
+- MCP client profile, plugins, capability discovery, version negotiation, reliability, security.
+- Normative requirements `INT-REQ-001` through `INT-REQ-062`.
+- Assets: `specification/AESP-0015.md`, `-continued.md`, `-reference.md`, `aesp-0015.yaml`.
+
+## [1.6.0] — 2026-07-10
+
+### Added — AESP-0014: Human-in-the-Loop
+
+- Human task model, approvals/reviews/intervene, escalation, SLAs, Mission Control API surface.
+- Normative requirements `HITL-REQ-001` through `HITL-REQ-045`.
+- Assets: `specification/AESP-0014.md`, `-continued.md`, `-reference.md`, `aesp-0014.yaml`.
+
+## [1.5.0] — 2026-07-10
+
+### Added — AESP-0013: Security & Compliance
+
+- Cross-cutting security: identity, authn/authz, secrets, classification, audit, supply chain, multi-agent threats.
+- Normative requirements `SEC-REQ-001` through `SEC-REQ-051`.
+- Assets: `specification/AESP-0013.md`, `-continued.md`, `-reference.md`, `aesp-0013.yaml`.
+
+## [1.4.0] — 2026-07-10
+
+### Added — AESP-0012: Remediation & Self-Healing
+
+- Incidents, playbooks, automated actions, guardrails, escalation, verification, deploy rollback linkage.
+- Normative requirements `REM-REQ-001` through `REM-REQ-048`.
+- Assets: `specification/AESP-0012.md`, `-continued.md`, `-reference.md`, `aesp-0012.yaml`.
+
+## [1.3.0] — 2026-07-10
+
+### Added — AESP-0011: Observability
+
+- Telemetry signals, correlation, SLOs, alerting, pipelines, retention, investigation packages.
+- Normative requirements `OBS-REQ-001` through `OBS-REQ-084`.
+- Assets: `specification/AESP-0011.md`, `-continued.md`, `-reference.md`, `aesp-0011.yaml`.
 
 ## [1.2.0] — 2026-07-10
 

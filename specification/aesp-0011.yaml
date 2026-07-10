@@ -1,0 +1,9 @@
+id: AESP-0011
+title: Observability
+status: draft
+category: protocol
+version: "0.1.0"
+authors: ["AESP Technical Committee"]
+date: "2026-07-10"
+description: "Specifies observability semantics including telemetry signals, correlation, SLOs, alerting, pipelines, retention, security, and conformance for autonomous engineering organizations and Agent OS runtimes."
+dependencies: ["AESP-0000", "AESP-0001", "AESP-0003", "AESP-0005", "AESP-0009", "AESP-0010"]

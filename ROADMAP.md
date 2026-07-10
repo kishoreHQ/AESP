@@ -8,9 +8,9 @@ pending community review and committee decisions.
 
 | Phase | Name | Specs | Target | Status |
 |-------|------|-------|--------|--------|
-| Phase 1 | Foundation | AESP-0000 — AESP-0005 | Q3 2026 | IN PROGRESS |
+| Phase 1 | Foundation | AESP-0000 — AESP-0005 | Q3 2026 | DRAFT COMPLETE |
 | Phase 2 | Infrastructure | AESP-0006 — AESP-0010 | Q4 2026 | DRAFT COMPLETE |
-| Phase 3 | Operations | AESP-0011 — AESP-0015 | Q1 2027 | PLANNED |
+| Phase 3 | Operations | AESP-0011 — AESP-0015 | Q1 2027 | DRAFT COMPLETE |
 | Phase 4 | Ecosystem | Reference implementation, examples, tooling | Q2 2027 | PLANNED |
 | Phase 5 | Standardization | Community review, RFC process, stable release | Q3 2027 | PLANNED |
 
@@ -89,10 +89,16 @@ security, human interaction, and system integration.
 
 ### Phase 3 Exit Criteria
 
-- [ ] All five specifications reach DRAFT status with complete normative content
-- [ ] Full specification suite (AESP-0000 through AESP-0015) internally consistent
-- [ ] All cross-specification references validated
-- [ ] Compliance matrix published
+- [x] AESP-0011 Observability published (DRAFT)
+- [x] AESP-0012 Remediation & Self-Healing published (DRAFT)
+- [x] AESP-0013 Security & Compliance published (DRAFT)
+- [x] AESP-0014 Human-in-the-Loop published (DRAFT)
+- [x] AESP-0015 Integration & Interoperability published (DRAFT)
+- [x] All five specifications reach DRAFT status with complete normative content
+- [x] Full specification suite (AESP-0000 through AESP-0015) authored as DRAFT
+- [x] Suite architecture map published (`specification/ARCHITECTURE.md`)
+- [ ] Independent multi-vendor implementation pilots
+- [ ] Formal compliance matrix export tooling
 
 ---
 
@@ -184,7 +190,7 @@ gantt
 
 ---
 
-*Last updated: 2026-07-10*
+*Last updated: 2026-07-10 (suite DRAFT complete through AESP-0015)*
 
 For the current status of individual specifications, see
 [specification/README.md](specification/README.md).
