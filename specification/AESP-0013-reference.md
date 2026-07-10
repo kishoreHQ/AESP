@@ -46,13 +46,21 @@ Anti-patterns: shared root API keys for all agents; production tools in sandbox 
 
 `SEC-REQ-058`: Production profiles that claim AESP-0007–AESP-0012 or AESP-0015 conformance MUST also meet at least AESP-0013 L1 (security baseline).
 
+`SEC-REQ-059`: Defenses against indirect prompt injection MUST address tool outputs, retrieved documents, and memory records—not only direct user chat input.
+
+`SEC-REQ-060`: Long-term memory poisoning MUST be treated as a security incident class with quarantine and audit (coordinates with AESP-0004).
+
+`SEC-REQ-061`: Excessive agency controls MUST limit which tools an agent may invoke per WorkUnit even after a successful model tool-call proposal.
+
+`SEC-REQ-062`: Security evaluation suites SHOULD include agent-specific cases: tool exfiltration attempts, peer agent confused deputy, and memory promotion of untrusted instructions.
+
 ## 12. Appendices
 
 ### Baseline Audit Event Types
 `authn.success`, `authn.failure`, `authz.deny`, `secret.read`, `policy.change`, `breakglass.activate`, `artifact.admit`, `artifact.deny`.
 
 ### Requirement Index
-`SEC-REQ-001`–`SEC-REQ-058`.
+`SEC-REQ-001`–`SEC-REQ-062`.
 
 # References
 

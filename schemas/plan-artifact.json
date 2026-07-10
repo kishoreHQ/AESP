@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://aesp.dev/schemas/plan-artifact.json",
+  "title": "AESP Plan Artifact",
+  "type": "object",
+  "required": ["id", "workUnitId", "goal", "steps", "revision", "createdAt"],
+  "properties": {
+    "id": { "type": "string" },
+    "workUnitId": { "type": "string" },
+    "goal": { "type": "string" },
+    "assumptions": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "successCriteria": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "steps": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "description"],
+        "properties": {
+          "id": { "type": "string" },
+          "description": { "type": "string" },
+          "toolName": { "type": "string" },
+          "dependsOn": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "status": {
+            "type": "string",
+            "enum": ["pending", "running", "done", "skipped", "failed"]
+          }
+        }
+      }
+    },
+    "revision": { "type": "integer", "minimum": 1 },
+    "supersedes": { "type": "string" },
+    "createdAt": { "type": "string", "format": "date-time" },
+    "createdBy": { "type": "string" }
+  },
+  "additionalProperties": true
+}

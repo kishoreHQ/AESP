@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://aesp.dev/schemas/hitl-task.json",
+  "title": "AESP HITL Task",
+  "type": "object",
+  "required": ["id", "type", "state", "requester", "createdAt"],
+  "properties": {
+    "id": { "type": "string" },
+    "type": {
+      "type": "string",
+      "enum": ["approve", "review", "input", "intervene", "acknowledge"]
+    },
+    "state": {
+      "type": "string",
+      "enum": ["pending", "notified", "claimed", "completed", "cancelled", "expired", "escalated"]
+    },
+    "requester": { "type": "string" },
+    "assignee": { "type": "string" },
+    "priority": { "type": "string" },
+    "workUnitId": { "type": "string" },
+    "subjectDigests": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "respondBy": { "type": "string", "format": "date-time" },
+    "createdAt": { "type": "string", "format": "date-time" },
+    "decision": {
+      "type": "object",
+      "properties": {
+        "outcome": { "type": "string" },
+        "comment": { "type": "string" },
+        "actor": { "type": "string" },
+        "at": { "type": "string", "format": "date-time" }
+      }
+    }
+  },
+  "additionalProperties": true
+}

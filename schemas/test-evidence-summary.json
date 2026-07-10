@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://aesp.dev/schemas/test-evidence-summary.json",
+  "title": "AESP Test Evidence Summary",
+  "type": "object",
+  "required": ["sessionId", "subjects", "summary", "gate"],
+  "properties": {
+    "sessionId": { "type": "string" },
+    "requestId": { "type": "string" },
+    "subjects": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id"],
+        "properties": {
+          "id": { "type": "string" },
+          "digest": { "type": "string" }
+        }
+      }
+    },
+    "summary": {
+      "type": "object",
+      "required": ["passed", "failed"],
+      "properties": {
+        "passed": { "type": "integer", "minimum": 0 },
+        "failed": { "type": "integer", "minimum": 0 },
+        "errored": { "type": "integer", "minimum": 0 },
+        "skipped": { "type": "integer", "minimum": 0 },
+        "flaky": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "gate": {
+      "type": "object",
+      "required": ["outcome"],
+      "properties": {
+        "outcome": {
+          "type": "string",
+          "enum": ["pass", "fail", "pass-with-warnings"]
+        },
+        "policy": { "type": "string" }
+      }
+    },
+    "artifacts": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  },
+  "additionalProperties": true
+}

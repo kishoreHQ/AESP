@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://aesp.dev/schemas/deploy-session-summary.json",
+  "title": "AESP Deploy Session Summary",
+  "type": "object",
+  "required": ["sessionId", "environment", "artifact", "status", "strategy"],
+  "properties": {
+    "sessionId": { "type": "string" },
+    "requestId": { "type": "string" },
+    "environment": { "type": "string" },
+    "artifact": {
+      "type": "object",
+      "required": ["id", "digest"],
+      "properties": {
+        "id": { "type": "string" },
+        "digest": { "type": "string" }
+      }
+    },
+    "previousArtifact": { "type": "string" },
+    "strategy": { "type": "string" },
+    "status": { "type": "string" },
+    "gateResults": {
+      "type": "array",
+      "items": { "type": "object" }
+    },
+    "testEvidenceRef": { "type": "string" },
+    "startedAt": { "type": "string", "format": "date-time" },
+    "endedAt": { "type": "string", "format": "date-time" }
+  },
+  "additionalProperties": true
+}

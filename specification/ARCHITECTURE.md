@@ -144,6 +144,16 @@ For production profiles, **the stricter of AESP-0013 and the feature spec applie
 
 Working group gap register and dispositions: [GAP-ANALYSIS.md](GAP-ANALYSIS.md).
 
+## 13.1 External Protocol & Runtime Guides
+
+| Doc | Purpose |
+|:---|:---|
+| [INTEROP-MATRIX.md](INTEROP-MATRIX.md) | MCP, A2A, ACP, ANP, providers → AESP |
+| [AGENT-RUNTIME.md](AGENT-RUNTIME.md) | Agent harness loop, control vs compute |
+| [EVENT-REGISTRY.md](EVENT-REGISTRY.md) | Shared event type names |
+| [CONFORMANCE.md](CONFORMANCE.md) | Suite profiles |
+| `../schemas/` | JSON Schema interop package |
+
 ## 14. Implementation Checklist (Publication Quality)
 
 - [ ] All sessions have IRIs and audit trails

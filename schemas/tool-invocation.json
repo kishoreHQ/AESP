@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://aesp.dev/schemas/tool-invocation.json",
+  "title": "AESP Tool Invocation Record",
+  "type": "object",
+  "required": [
+    "invocationId",
+    "toolName",
+    "principalId",
+    "policyDecision",
+    "startedAt",
+    "status"
+  ],
+  "properties": {
+    "invocationId": { "type": "string", "minLength": 1 },
+    "toolName": { "type": "string", "minLength": 1 },
+    "connectorId": { "type": "string" },
+    "principalId": { "type": "string" },
+    "workUnitId": { "type": "string" },
+    "arguments": { "type": "object" },
+    "argumentsRedacted": { "type": "boolean" },
+    "trustLabel": {
+      "type": "string",
+      "enum": ["trusted", "untrusted", "mixed"]
+    },
+    "sideEffectClass": {
+      "type": "string",
+      "enum": ["read", "write", "admin"]
+    },
+    "policyDecision": {
+      "type": "object",
+      "required": ["outcome"],
+      "properties": {
+        "outcome": { "type": "string", "enum": ["allow", "deny"] },
+        "policyVersion": { "type": "string" },
+        "reason": { "type": "string" }
+      }
+    },
+    "startedAt": { "type": "string", "format": "date-time" },
+    "endedAt": { "type": "string", "format": "date-time" },
+    "status": {
+      "type": "string",
+      "enum": ["running", "succeeded", "failed", "timeout", "denied", "cancelled"]
+    },
+    "errorClass": { "type": "string" },
+    "resultRef": { "type": "string" },
+    "traceId": { "type": "string" },
+    "spanId": { "type": "string" }
+  },
+  "additionalProperties": true
+}

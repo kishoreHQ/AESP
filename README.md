@@ -129,16 +129,24 @@ AESP/
 
 ## Status
 
-**DRAFT suite complete — AESP-0000 through AESP-0015**
+**DRAFT suite complete — AESP-0000 through AESP-0015** (world-class hardening pass)
 
 The full planned specification family (Phases 1–3) is authored at DRAFT
-maturity. Documents remain subject to change until promoted to `STABLE` under
+maturity, with industry interop maps (MCP/A2A/ACP/ANP), agent runtime harness
+guidance, JSON Schemas, security/memory poison controls, and suite validation
+tooling. Documents remain subject to change until promoted to `STABLE` under
 AESP-0000 governance. Implementations MUST account for breaking changes between
 DRAFT revisions.
 
-See [specification/ARCHITECTURE.md](specification/ARCHITECTURE.md) for the
-Agent Operating System layer map (Hermes, Mission Control, multi-agent control
-loop) and [CHANGELOG.md](CHANGELOG.md) for release history through **1.7.0**.
+| Start here | |
+|------------|--|
+| [specification/ARCHITECTURE.md](specification/ARCHITECTURE.md) | Agent OS map |
+| [specification/AGENT-RUNTIME.md](specification/AGENT-RUNTIME.md) | Harness / agent loop |
+| [specification/INTEROP-MATRIX.md](specification/INTEROP-MATRIX.md) | External protocols |
+| [specification/CONFORMANCE.md](specification/CONFORMANCE.md) | Profiles |
+| [schemas/](schemas/) | JSON Schemas |
+| [CHANGELOG.md](CHANGELOG.md) | History through **1.9.0** |
+| `./scripts/validate-suite.sh` | Structural validation |
 
 Stable specifications will be published with `STABLE` status and a version
 number adhering to [Semantic Versioning](https://semver.org/).

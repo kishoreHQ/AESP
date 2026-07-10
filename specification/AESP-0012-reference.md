@@ -46,7 +46,7 @@ Anti-patterns: infinite restart loops; auto-running unreviewed scripts from chat
 `restart`, `scale`, `rollback_deploy`, `feature_flag`, `traffic_shift`, `failover`, `page_human`, `run_diagnostic`, `custom`.
 
 ### Requirement Index
-`REM-REQ-001`–`REM-REQ-056`.
+`REM-REQ-001`–`REM-REQ-061`.
 
 # References
 

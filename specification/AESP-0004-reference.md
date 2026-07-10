@@ -44,6 +44,14 @@ Prompt injection becomes more durable when malicious content is stored as memory
 
 `MEM-REQ-099`: Consolidation SHOULD detect attempts to convert untrusted episodic content into authoritative semantic or procedural memory.
 
+`MEM-REQ-108`: Memories admitted from tool outputs, web retrieval, or peer agents MUST default to trust class `untrusted` unless a higher trust policy explicitly applies.
+
+`MEM-REQ-109`: Indirect prompt injection defenses MUST include blocking promotion of untrusted memory into procedural instructions that change tool policy or system prompts.
+
+`MEM-REQ-110`: When a memory is found to be poisoned (malicious instruction content), implementations MUST support quarantine of that record and optional cascade review of consolidations derived from it.
+
+`MEM-REQ-111`: Cross-session memory reuse MUST re-evaluate authorization and trust class at retrieval time, not only at write time.
+
 ## 10. Implementation Guidelines
 
 ### 10.1 Minimum Viable Implementation
@@ -192,7 +200,7 @@ LoCoMo evaluates very long-term conversational memory across long dialogues and 
 
 ### 12.3 Requirement Index
 
-Requirements `MEM-REQ-001` through `MEM-REQ-107` define the normative surface of this draft. Future revisions SHOULD preserve identifiers and append new identifiers rather than renumbering existing requirements.
+Requirements `MEM-REQ-001` through `MEM-REQ-111` define the normative surface of this draft. Future revisions SHOULD preserve identifiers and append new identifiers rather than renumbering existing requirements.
 
 # References
 

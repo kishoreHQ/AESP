@@ -1,0 +1,11 @@
+id: AESP-0000
+title: Constitution / Specification Governance
+status: draft
+category: governance
+version: "1.0.0-draft"
+authors: ["AESP Technical Committee"]
+date: "2026-07-10"
+description: "Constitutional governance, normative language, amendment process, and machine-readability rules for the AESP specification family."
+dependencies: []
+related: ["AESP-0001", "AESP-0002", "AESP-0003", "AESP-0004", "AESP-0005", "AESP-0006", "AESP-0007", "AESP-0008", "AESP-0009", "AESP-0010", "AESP-0011", "AESP-0012", "AESP-0013", "AESP-0014", "AESP-0015"]
+note: "Root aesp.yaml also describes AESP-0000 project-level metadata."

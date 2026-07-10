@@ -232,6 +232,18 @@ Workflow orchestration quality SHOULD be evaluated using the following metrics:
 
 `WF-REQ-138`: Implementations SHOULD publish conformance test results, including which tier is claimed and the metrics achieved, to enable cross-implementation comparison.
 
+### 11.5 Subagent and Context Isolation
+
+Industry agent harnesses isolate subagent context to prevent capability and prompt leakage between parent and child agents.
+
+`WF-REQ-139`: When a workflow spawns a subagent or child workflow, the child MUST receive an explicit capability and tool allowlist; ambient inheritance of all parent tools is non-conformant for production.
+
+`WF-REQ-140`: Child workflow memory scope MUST default to a child-private or task-private scope unless the definition explicitly shares parent memory with declared trust labels.
+
+`WF-REQ-141`: Parent workflows MUST be able to cancel child workflows and MUST receive structured completion or failure from children.
+
+`WF-REQ-142`: Credentials or break-glass tokens held by a parent MUST NOT be automatically injected into child contexts.
+
 ## 12. Appendices
 
 ### 12.1 Workflow Operation Error Codes
@@ -314,7 +326,7 @@ Workflow orchestration quality SHOULD be evaluated using the following metrics:
 
 ### 12.3 Requirement Index
 
-Requirements `WF-REQ-001` through `WF-REQ-138` define the normative surface of this draft. Future revisions SHOULD preserve identifiers and append new identifiers rather than renumbering existing requirements.
+Requirements `WF-REQ-001` through `WF-REQ-142` define the normative surface of this draft. Future revisions SHOULD preserve identifiers and append new identifiers rather than renumbering existing requirements.
 
 | Range | Domain | Count |
 |:---|:---|:---|
@@ -328,6 +340,7 @@ Requirements `WF-REQ-001` through `WF-REQ-138` define the normative surface of t
 | `WF-REQ-096` to `WF-REQ-108` | Human-in-the-Loop | 13 |
 | `WF-REQ-109` to `WF-REQ-125` | Multi-Agent Coordination | 17 |
 | `WF-REQ-126` to `WF-REQ-138` | Implementation & Conformance | 13 |
+| `WF-REQ-139` to `WF-REQ-142` | Subagent Isolation | 4 |
 
 # References
 

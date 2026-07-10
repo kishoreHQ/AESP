@@ -9,9 +9,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Planned
-- Phase 4 ecosystem (reference implementations, conformance suites, REQ linter)
-- JSON Schema bundle for session objects
+- Phase 4: golden OpenAI-compat + MCP + A2A mock conformance tests
+- Broader JSON Schema coverage for all session objects
 - Community review toward STABLE
+
+## [1.9.0] — 2026-07-10
+
+### Added — World-Class Hardening (Industry Deep Dive)
+
+Research-informed pass against MCP, A2A, ACP, ANP ecosystems; agent harness
+vs eval harness practice; and agent security (indirect prompt injection,
+memory poisoning, excessive agency).
+
+#### New suite assets
+
+- `specification/INTEROP-MATRIX.md` — external protocol mapping and adoption roadmap
+- `specification/AGENT-RUNTIME.md` — canonical agent loop, control vs compute plane, subagents
+- `schemas/` — JSON Schema 2020-12 package (tool invocation, plan, HITL, test evidence, deploy, envelope)
+- `scripts/validate-suite.sh` — REQ uniqueness + layout + schema JSON validation
+- `specification/aesp-0000.yaml` — metadata for Constitution
+
+#### Normative extensions
+
+- **AESP-0015**: A2A peer profile, loop observability hooks (`INT-REQ-080`–`088`)
+- **AESP-0004**: memory poison / untrusted admission / cascade quarantine (`MEM-REQ-108`–`111`)
+- **AESP-0005**: subagent tool/memory/credential isolation (`WF-REQ-139`–`142`)
+- **AESP-0013**: IPI across tools/docs/memory, excessive agency, agent security evals (`SEC-REQ-059`–`062`)
+- **AESP-0012**: deploy-correlated remediation, flag audit, incident storm grouping (`REM-REQ-057`–`061`)
+
+#### Docs
+
+- GAP-ANALYSIS pass 3 (GAP-018–024)
+- README / specification index updated for implementation entry points
 
 ## [1.8.0] — 2026-07-10
 

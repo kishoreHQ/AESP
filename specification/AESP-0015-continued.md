@@ -99,3 +99,23 @@ This section closes the gap between AESP-0001 Capabilities, MCP tools, and secur
 `INT-REQ-075`: When an agent produces a multi-step plan for a WorkUnit, the plan MUST be storable as a versioned artifact with: goal, steps[], assumptions[], successCriteria[], and revision history, referenced by the WorkUnit or workflow instance.
 
 `INT-REQ-076`: Plan revisions MUST not erase prior revisions required for audit; supersession pointers are REQUIRED.
+
+## 8.9 A2A (Agent-to-Agent) Peer Profile
+
+Industry A2A protocols enable peer agent collaboration across organizational boundaries. AESP profiles A2A-style peers without forking their wire format. See `INTEROP-MATRIX.md`.
+
+`INT-REQ-080`: Implementations claiming an A2A peer profile MUST map remote tasks to AESP WorkUnits or workflow tasks with stable correlation ids.
+
+`INT-REQ-081`: Peer capability advertisements MUST be authenticated and bound to a trust anchor under AESP-0013 before use in production.
+
+`INT-REQ-082`: Cross-organization peer invocations MUST enforce data classification and egress policy; default is deny.
+
+`INT-REQ-083`: Artifacts received from peers MUST retain external provenance and MUST NOT be relabeled as locally observed facts (aligns with graph import rules in AESP-0006).
+
+`INT-REQ-084`: A2A-style push notifications or callbacks MUST authenticate the peer and correlate to an existing WorkUnit or task when completing work.
+
+## 8.10 Agent Loop Observability Hooks
+
+`INT-REQ-085`: Each provider completion and tool invocation in an agent loop MUST be correlatable via `workUnitId` and optional `traceId`.
+
+`INT-REQ-086`: Runtimes MUST expose a step counter and budget remaining for active WorkUnits when quotas are configured (AESP-0001 resource model).

@@ -69,3 +69,17 @@
 `REM-REQ-053`: Post-incident records MUST include a timeline of detection, mitigation, verification, and resolution timestamps.
 
 `REM-REQ-054`: Follow-up WorkUnits created from incidents MUST reference the incident id.
+
+## 8.2 Coordination with Deploy and Feature Flags
+
+`REM-REQ-057`: When error-budget burn correlates with a recent deploy session, playbooks SHOULD prefer AESP-0009 rollback or traffic reduction before speculative config mutation.
+
+`REM-REQ-058`: Feature-flag remediations MUST record flag id, prior value, new value, and expiry or review time.
+
+`REM-REQ-059`: Remediation actions that change production MUST emit `aesp.remediation.action.executed` events consumable by AESP-0011.
+
+## 8.3 Multi-Incident Storm Control
+
+`REM-REQ-060`: Incident storms with related fingerprints MUST collapse into a parent incident or incident group with a single primary remediation session when policy enables grouping.
+
+`REM-REQ-061`: Grouping policies MUST be versioned and MUST NOT drop SEV1 visibility from operator dashboards.

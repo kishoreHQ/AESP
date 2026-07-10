@@ -67,6 +67,10 @@ Recommended integration surface for Hermes:
 
 `INT-REQ-079`: Conformance tests MUST include: untrusted tool-result labeling, fallback audit, and budget exhaustion deny.
 
+`INT-REQ-087`: A2A peer profile claims MUST be tested for unauthenticated peer rejection and classification enforcement.
+
+`INT-REQ-088`: Interoperability documentation MUST reference `specification/INTEROP-MATRIX.md` or an equivalent mapping of MCP/A2A/provider bindings.
+
 ## 12. Appendices
 
 ### 12.1 Example Provider Descriptor
@@ -95,7 +99,7 @@ sandbox: restricted
 
 ### 12.3 Requirement Index
 
-`INT-REQ-001` through `INT-REQ-079`.
+`INT-REQ-001` through `INT-REQ-088`.
 
 | Range | Domain |
 |:---|:---|
@@ -106,7 +110,8 @@ sandbox: restricted
 | 037–041 | Discovery |
 | 042–048 | Mapping / Reliability |
 | 049–062 | Security / Conformance (base) |
-| 063–079 | Tool runtime, fallback, suite version, plan binding, extended conformance |
+| 063–079 | Tool runtime, fallback, suite version, plan binding |
+| 080–088 | A2A peer profile, loop hooks, extended conformance |
 
 # References
 

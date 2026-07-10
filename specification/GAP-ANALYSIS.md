@@ -1,7 +1,7 @@
 # AESP Suite Gap Analysis
 
-*Status: Working Group Review Artifact | Date: 2026-07-10 | Pass: 2*  
-*Scope: AESP-0000 through AESP-0015 against Hermes Agent OS / Mission Control / multi-vendor goals*
+*Status: Working Group Review Artifact | Date: 2026-07-10 | Pass: 3 (world-class / industry interop)*  
+*Scope: AESP-0000 through AESP-0015 against Hermes Agent OS / Mission Control / multi-vendor goals; industry protocols MCP, A2A, ACP, ANP; agent harness & security research*
 
 This document records **gap analysis, cross-spec validation findings, and dispositions**. It is informative unless a disposition says a normative change was applied in a listed specification.
 
@@ -206,9 +206,22 @@ For each gap we record:
 | accepted | 010, 016 |
 | deferred | 011, 012 |
 
-## 9. Next Working Group Actions
+## 9. Pass 3 Additions (Industry Deep Dive)
 
-1. Phase 4: golden OpenAI-compat + MCP mock conformance tests.  
-2. Emit JSON Schema bundle for session objects.  
+| ID | Finding | Disposition |
+|:---|:---|:---|
+| GAP-018 | No explicit MCP/A2A/ACP/ANP interop map | **fixed** — `INTEROP-MATRIX.md` + INT A2A profile |
+| GAP-019 | Agent harness vs eval harness not documented | **fixed** — `AGENT-RUNTIME.md` |
+| GAP-020 | No machine-readable JSON Schemas | **fixed** — `/schemas` package |
+| GAP-021 | Memory poison / IPI cascade under-specified vs 2025–26 research | **fixed** — MEM-REQ-108–111, SEC-REQ-059–062 |
+| GAP-022 | Subagent context isolation thin vs industry harnesses | **fixed** — WF-REQ-139–142 |
+| GAP-023 | No suite structural validator | **fixed** — `scripts/validate-suite.sh` |
+| GAP-024 | aesp-0000.yaml missing | **fixed** |
+
+## 10. Next Working Group Actions
+
+1. Phase 4: golden OpenAI-compat + MCP + A2A mock conformance tests.  
+2. Expand JSON Schema coverage for all session objects.  
 3. Optional AESP amendment: Tenant resource (if multi-tenant SaaS becomes primary).  
-4. Promote profiles after two independent implementations.
+4. Promote profiles after two independent implementations.  
+5. Optional deep prose expansion of 0012–0014 narrative to match 0003 density (quality, not blockers).

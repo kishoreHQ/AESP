@@ -128,7 +128,19 @@ graph TD
     style A0005 fill:#e1f5fe
 ```
 
-For the Agent OS control loop, correlation keys, and Hermes recommended levels, see **[ARCHITECTURE.md](ARCHITECTURE.md)**. For suite-level conformance profiles, see **[CONFORMANCE.md](CONFORMANCE.md)**. For working-group gap analysis and dispositions, see **[GAP-ANALYSIS.md](GAP-ANALYSIS.md)**. Shared event types: **[EVENT-REGISTRY.md](EVENT-REGISTRY.md)**.
+### Suite guides (read these for Agent OS implementation)
+
+| Guide | Purpose |
+|-------|---------|
+| **[ARCHITECTURE.md](ARCHITECTURE.md)** | Layer map, control loop, correlation keys, Hermes levels |
+| **[AGENT-RUNTIME.md](AGENT-RUNTIME.md)** | Agent harness loop, subagents, control vs compute plane |
+| **[INTEROP-MATRIX.md](INTEROP-MATRIX.md)** | MCP / A2A / ACP / ANP / provider mapping |
+| **[CONFORMANCE.md](CONFORMANCE.md)** | Suite profiles (`hermes-agent-os`, etc.) |
+| **[GAP-ANALYSIS.md](GAP-ANALYSIS.md)** | Gap register and dispositions |
+| **[EVENT-REGISTRY.md](EVENT-REGISTRY.md)** | Shared `aesp.*` event types |
+| **[../schemas/](../schemas/)** | JSON Schemas for core objects |
+
+Validate structure locally: `./scripts/validate-suite.sh`
 
 ## How to Read the Specifications
 
