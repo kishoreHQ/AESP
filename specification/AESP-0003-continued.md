@@ -986,4 +986,162 @@ The sliding window tracks failure statistics over a recent period, preventing a 
 
 #### 7.3.3 Transport Failures Only
 
-Circuit breakers in this specification apply ONLY to transport-level failures: HTTP 5xx responses, TCP connection errors, TLS handshake failures, and request timeouts. They MUST NOT trigger on semantic failures such as hallucinated content, invalid tool arguments, or business validation errors. The rationale is fundamental: circuit breakers protect infrastructure by stopping requests to failing services, but semantic failures occur at the application layer where the service is functioning correctly from a transport perspective [^514^]. Treating HTTP 200 responses with b
+Circuit breakers in this specification apply ONLY to transport-level failures: HTTP 5xx responses, TCP connection errors, TLS handshake failures, and request timeouts. They MUST NOT trigger on semantic failures such as hallucinated content, invalid tool arguments, or business validation errors. The rationale is fundamental: circuit breakers protect infrastructure by stopping requests to failing services, but semantic failures occur at the application layer where the service is functioning correctly from a transport perspective [^514^]. Treating HTTP 200 responses with bad content as circuit-breaker failures would open the breaker on every hallucination, blocking all traffic to a service that is technically healthy.
+
+#### 7.3.4 Layered Resilience Architecture
+
+Production resilience composes multiple patterns in a specific order. Table 7.3 compares the resilience patterns and their roles in the layered architecture.
+
+**Table 7.3: Resilience Pattern Comparison**
+
+| Pattern | Layer | Purpose | Trigger | Recovery | Cost if Missing |
+|---------|-------|---------|---------|----------|-----------------|
+| Bulkhead | 1 (outer) | Limit concurrency per agent/capability | Fixed pool exhaustion | None (prevention) | Cascade failure across all capabilities |
+| Circuit Breaker | 2 | Fail-fast for known-bad dependencies | Failure rate > threshold | Automatic probe after timeout | Retry storms during outages |
+| Retry | 3 | Recover from transient failures | Retryable error returned | Success on next attempt | Unnecessary failures from jitter |
+| Fallback | 4 (inner) | Provide degraded response when all else fails | Circuit breaker OPEN or retries exhausted | Manual intervention or cached result | Complete service unavailability |
+
+The composition order is critical: bulkhead first (prevent resource exhaustion), then circuit breaker (fail-fast for known-bad dependencies), then retry (recover from transient failures), then fallback (provide degraded response). Reversing this order — for example, placing retry before circuit breaker — causes the retry loop to exhaust its attempts against a failing service before the breaker can open, defeating the purpose of both patterns [^38^][^39^].
+
+### 7.4 Saga Pattern for Distributed Transactions
+
+#### 7.4.1 Saga as an Alternative to Two-Phase Commit
+
+Two-phase commit (2PC) is unsuitable for agent systems because it requires holding locks across distributed services during the prepare phase, creating coupling and availability risk. The saga pattern decomposes a long-running transaction into a sequence of local transactions, each with a compensating action that undoes its effect if the overall saga fails. SagaLLM (PVLDB 2025) extends this pattern to LLM-based multi-agent systems with automated compensation generation — the system generates compensating actions using the same LLM that produced the original action, with explicit verification that the compensation reverses the original effect [^7^].
+
+#### 7.4.2 Choreography vs. Orchestration
+
+Sagas may be coordinated through choreography (each service emits events that trigger the next step) or orchestration (a central coordinator directs each step). AESP-0003 supports both: choreography for loosely-coupled agent workflows where agents react to events autonomously, and orchestration for complex transactions requiring explicit sequencing and error handling. The choice follows the same tradeoffs as general multi-agent coordination (Section 5.6): choreography scales better but is harder to debug; orchestration provides clearer control flow but introduces a single point of failure.
+
+#### 7.4.3 Compensation Requirements
+
+Every saga step MUST have a defined compensating action. The compensation MUST be idempotent (repeated execution produces the same result) and MUST complete within a bounded time. AESP-0003 implementations SHOULD verify compensation correctness through automated testing: apply the action, apply the compensation, and verify that the resulting state matches the initial state. SagaLLM's automated compensation generation addresses the "80% of saga failures originate from non-idempotent compensations" observation by generating compensations with explicit idempotency guarantees [^7^].
+
+### 7.5 Health Checking and Load Shedding
+
+#### 7.5.1 Liveness and Readiness Probes
+
+Every agent MUST expose health check endpoints for liveness (is the process running?) and readiness (is the agent ready to accept requests?). The liveness probe is a simple HTTP GET returning 200 OK if the process is alive; failure triggers restart by the orchestrator. The readiness probe checks that the agent has completed initialization, connected to required dependencies, and is ready to process requests; failure removes the agent from the load balancer pool without restarting it. Health checks MUST be lightweight (no dependency calls) and MUST complete within 1 second.
+
+#### 7.5.2 Load Shedding
+
+When an agent is overloaded (queue depth exceeds threshold, latency p99 exceeds SLO, or CPU/memory exceeds limits), it MUST shed load by rejecting new requests with error code `-32501` (RateLimitExceeded) and a `Retry-After` header. Load shedding is preferable to accepting requests that will timeout or fail, as it provides immediate feedback to callers rather than wasting their time. The load shedding threshold SHOULD be set at 80% of capacity, providing a buffer before complete overload.
+
+---
+
+## 8. Security
+
+Agent communication security operates at multiple layers: transport encryption protects messages in transit, authentication verifies identity, authorization controls access, and message-level signing provides non-repudiation. This chapter specifies the security architecture for AESP-0003, drawing from the IETF Agent Identity Protocol (AIP) [^8^], the IETF Agent Audit Trail (AAT) [^8^], A2A's security model [^355^], and ANP's DID-based authentication [^603^].
+
+### 8.1 Transport Security
+
+#### 8.1.1 TLS Requirements
+
+All AESP-0003 communication MUST use TLS 1.2 or higher. TLS 1.0 and 1.1 are explicitly prohibited (RFC 8996). The following cipher suites are RECOMMENDED, in order of preference:
+
+1. TLS_AES_256_GCM_SHA384 (TLS 1.3)
+2. TLS_AES_128_GCM_SHA256 (TLS 1.3)
+3. TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+4. TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
+
+Certificate validation MUST verify the full certificate chain against a trusted root CA. Self-signed certificates are NOT permitted in production deployments. Mutual TLS (mTLS) is RECOMMENDED for service-to-service communication, providing bidirectional authentication without requiring additional tokens.
+
+### 8.2 Authentication
+
+#### 8.2.1 Tiered Authentication Model
+
+AESP-0003 defines three authentication tiers, with Tier 1 being REQUIRED and Tiers 2-3 being OPTIONAL.
+
+**Tier 1 — API Key or OAuth 2.0 Client Credentials.** The client presents an API key in the `Authorization: Bearer <token>` header, or obtains an access token via the OAuth 2.0 Client Credentials flow (RFC 6749, Section 4.4). The token MUST be validated on every request. Token expiration MUST be enforced; expired tokens MUST be rejected with error code `-32202` (TokenExpired).
+
+**Tier 2 — OpenID Connect (OIDC).** Building on OAuth 2.0, OIDC provides identity verification through ID tokens containing claims about the authenticated entity. AESP-0003 uses OIDC for user-to-agent and agent-to-agent authentication where identity attributes (name, email, organization membership) are required for authorization decisions. The ID token MUST be validated according to the OIDC specification, including signature verification, issuer verification, audience verification, and expiration checking.
+
+**Tier 3 — DID-Based Authentication.** The IETF Agent Identity Protocol (AIP) defines DID-based authentication with the `did:wba` (Web-Based Agent) method, achieving 0-RTT verification: the client sends its first request already carrying a DID-signed authentication proof, completing identity verification and data exchange in a single HTTP request [^603^]. This eliminates client registration and avoids centralized identity providers. The `did:wba` method resolves DIDs over HTTPS, making the trust anchor the HTTPS server hosting the DID document rather than a blockchain [^603^][^604^].
+
+#### 8.2.2 Authentication Flow
+
+The following Mermaid diagram illustrates the authentication flow with tiered fallback:
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant C as Client
+    participant A as Agent
+    participant IdP as Identity Provider
+
+    alt Tier 1: API Key
+        C->>A: Request + Authorization: Bearer <api_key>
+        A->>A: Validate API key locally
+        A-->>C: Authenticated response
+    else Tier 2: OAuth 2.0 / OIDC
+        C->>IdP: POST /token (client_credentials)
+        IdP-->>C: Access token + ID token
+        C->>A: Request + Authorization: Bearer <access_token>
+        A->>IdP: GET /userinfo (introspection)
+        IdP-->>A: Token claims
+        A-->>C: Authenticated response
+    else Tier 3: DID (0-RTT)
+        C->>A: Request + DID-Signature header
+        A->>A: Verify signature with DID public key
+        A-->>C: Authenticated response (1 RTT total)
+    end
+```
+
+Tier 3 eliminates steps 5-6 (token introspection) by carrying the authentication proof directly in the request, reducing latency by one round-trip.
+
+### 8.3 Authorization
+
+#### 8.3.1 RBAC+ 4-Layer Model
+
+Authorization in AESP-0003 follows the RBAC+ 4-layer model defined in AESP-0002 [^109^][^110^]. Every protocol operation — message send, capability query, session creation, task delegation — MUST be subject to role-based access control. The four layers are:
+
+1. **Role Layer**: Defines RoleTemplates (reusable capability sets) and RoleAssignments (binding roles to agents within scopes).
+2. **Permission Layer**: Defines granular permissions (e.g., `tasks:send`, `skills:invoke`, `sessions:create`).
+3. **Scope Layer**: Limits permissions to specific namespaces, resources, or time periods.
+4. **Condition Layer**: Adds dynamic constraints (rate limits, budget caps, approval workflows).
+
+AESP-0003 adds protocol-specific permissions to the RBAC+ model: `aesp:connect` (establish a session), `aesp:delegate` (send a task to another agent), `aesp:subscribe` (subscribe to pub-sub topics), `aesp:stream` (open a streaming connection), and `aesp:discover` (query the Agent Description document). These permissions are evaluated at the transport binding layer before the operation is processed.
+
+#### 8.3.2 Capability-Based Access Control
+
+In addition to RBAC+, AESP-0003 supports capability-based access control following the IETF Agent Identity Protocol [^8^]. An agent may present an attenuated capability token — a cryptographically signed statement delegating a subset of its permissions to another agent. The token contains the delegator's DID, the delegate's DID, the delegated permissions, an expiration time, and a signature. Capability tokens enable fine-grained, short-lived delegation without requiring centralized authorization servers. They are particularly useful for multi-hop agent chains where each hop receives only the permissions it needs (principle of least privilege).
+
+### 8.4 Message Signing and Non-Repudiation
+
+#### 8.4.1 JWS Message Signing
+
+All messages in Tier 2 and Tier 3 deployments MUST be signed using JSON Web Signature (JWS, RFC 7515). The signing process: (1) serialize the message envelope without the `signatures` field using JSON Canonicalization Scheme (JCS, RFC 8785), (2) create a JWS compact serialization with the appropriate algorithm (EdDSA or ES256 for new deployments, RS256 for legacy compatibility), (3) append the signature to the envelope. Receiving agents validate incoming signatures with the public key defined in the caller's Agent Description document or DID document.
+
+#### 8.4.2 Non-Repudiation via Audit Trail
+
+The IETF Agent Audit Trail (AAT) specification provides tamper-evident logging for agent communication [^8^]. Every message send, receive, and processing event is recorded in an append-only log with hash chaining (each entry contains the hash of the previous entry). This structure makes it impossible to modify historical entries without invalidating all subsequent entries. The audit trail covers four verification levels: L0 (no verification), L1 (transport-level TLS), L2 (message-level signature), L3 (full non-repudiation with audit trail), and L4 (full mutual authentication with all prior levels). EU AI Act compliance requires L3 or higher for high-risk AI systems.
+
+### 8.5 Threat Model and Mitigations
+
+#### 8.5.1 Identified Threats
+
+| Threat | Description | Mitigation |
+|--------|-------------|------------|
+| Task Hijacking | Attacker forges Agent Card to redirect tasks to malicious agent | JWS signature verification on all Agent Description documents |
+| Man-in-the-Middle | Attacker intercepts and modifies communication | TLS 1.2+ with certificate validation |
+| Replay Attack | Attacker resends captured valid messages | Idempotency keys with server-side deduplication |
+| Token Theft | Attacker steals authentication token | Short token lifetime (max 1 hour), mTLS for service-to-service |
+| Prompt Injection | Attacker embeds malicious instructions in task payload | Input validation, sandboxed execution, output encoding |
+| Denial of Service | Attacker overwhelms agent with requests | Rate limiting, bulkhead pattern, load shedding |
+| Hallucination | LLM generates incorrect or harmful content | Semantic validation, human-in-the-loop for critical decisions |
+| Supply Chain | Compromised dependency introduces vulnerability | Dependency pinning, SBOM, vulnerability scanning |
+
+#### 8.5.2 Security Best Practices
+
+1. **Defense in depth**: No single security mechanism is sufficient. Combine TLS, authentication, authorization, and message signing.
+2. **Least privilege**: Agents should have only the permissions they need. Use capability tokens for short-lived delegation.
+3. **Fail closed**: Authentication and authorization failures MUST reject the request. Never default to allowing access.
+4. **Audit everything**: Log all security-relevant events (authentication attempts, authorization denials, session lifecycle) to the tamper-evident audit trail.
+5. **Rotate credentials**: API keys and certificates SHOULD be rotated every 90 days. Automated rotation is RECOMMENDED.
+6. **Validate inputs**: All message payloads MUST be validated against their declared JSON Schema before processing.
+7. **Sandbox execution**: Tool executions SHOULD run in sandboxed environments with limited access to system resources.
+8. **Encrypt at rest**: Persistent message queues, audit logs, and session state MUST be encrypted at rest.
+
+---
+
+*This completes AESP-0003: Communication Protocols — Chapters 5-8 (Communication Patterns, Capability Discovery, Reliability and Error Handling, Security).*
